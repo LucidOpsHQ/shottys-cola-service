@@ -7,3 +7,5 @@ ENV/
 # Environment Variables
 .env
 .env.local
+
+.vercel
