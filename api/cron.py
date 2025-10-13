@@ -86,11 +86,12 @@ class handler(BaseHTTPRequestHandler):
             logger.info(f"Stats: {stats}")
 
             # Send success response
+            import time
             self._send_response(200, {
                 "status": "success",
                 "message": "TTB COLA sync completed",
                 "stats": stats,
-                "timestamp": logger._core.clock.time()
+                "timestamp": time.time()
             })
 
         except Exception as e:
