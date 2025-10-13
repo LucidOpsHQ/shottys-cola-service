@@ -1,0 +1,40 @@
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Logs
+*.log
+scraper_*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+
+# Test files
+example.html
+example_first_page.html
+
+# Output files
+ttb_results.json
+ttb_results_backup.json
+ttb_results.txt
+
+# Old files
+scrape_ttb.py
+airtable_integration.py
+
+# Git
+.git/
+.gitignore

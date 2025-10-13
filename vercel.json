@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/cron.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/cron",
+      "dest": "api/cron.py"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron",
+      "schedule": "0 0 * * *"
+    }
+  ],
+  "env": {
+    "AIRTABLE_API_KEY": "@airtable_api_key",
+    "AIRTABLE_BASE_ID": "@airtable_base_id",
+    "AIRTABLE_TABLE_NAME": "TTB COLAs",
+    "TTB_PRODUCT_NAME": "Shottys",
+    "TTB_VENDOR_CODE": "23153",
+    "TTB_DELAY": "1.0",
+    "SYNC_STRATEGY": "incremental"
+  }
+}

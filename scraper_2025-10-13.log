@@ -1,0 +1,435 @@
+2025-10-13 10:37:46 | INFO     | __main__:main:32 - ================================================================================
+2025-10-13 10:37:46 | INFO     | __main__:main:33 - TTB COLA Scraper & Sync Tool
+2025-10-13 10:37:46 | INFO     | __main__:main:34 - ================================================================================
+2025-10-13 10:37:46 | INFO     | __main__:main:38 - Initializing TTB scraper...
+2025-10-13 10:37:46 | INFO     | scraper:__init__:40 - Initialized scraper for product: Shottys
+2025-10-13 10:37:46 | DEBUG    | scraper:__init__:41 - Date range: 10/18/2010 to 10/13/2025
+2025-10-13 10:37:46 | DEBUG    | scraper:__init__:42 - Vendor code: 23153
+2025-10-13 10:37:46 | WARNING  | __main__:main:47 - Airtable credentials not found!
+2025-10-13 10:37:46 | WARNING  | __main__:main:48 - Set AIRTABLE_API_KEY and AIRTABLE_BASE_ID environment variables to enable sync.
+2025-10-13 10:37:46 | INFO     | __main__:main:49 - 
+Running scraper in standalone mode (no sync)...
+
+2025-10-13 10:37:46 | INFO     | scraper:scrape:200 - Starting scrape for product: Shottys
+2025-10-13 10:37:46 | INFO     | scraper:scrape:204 - Fetching page 1...
+2025-10-13 10:37:47 | DEBUG    | scraper:scrape:209 - POST request to https://ttbonline.gov/colasonline/publicSearchColasAdvancedProcess.do
+2025-10-13 10:37:47 | DEBUG    | scraper:scrape:210 - Response cookies: {'JSESSIONID': '"9tyRRd1_MWDzNrW_uaV7iMVf1-wF1hvI5c_-bcvA.master:colas-ext-server"', 'TS0128ecc9': '0134890737efb26046bdedfa0e8cc3fe1a06c96cec623bec03cf8d3b80ca13c48cf857ccc4cb0b3c8d2d69fe5dec485d8ba87df1f2e7c8b55cdd04873c214137dc7783da81', 'TS01289f9a': '01f6e3b1e93d5f387d0b6c05883c3930a790417b17ab1100b95aa6b9e4f4b58f51c1685f15758702ea53bded511a2b2698a0ed6bf382b7c37930d2f4c1fde91756eb61793ec75b1b95545c89f3003a7dcfaa424638', 'BIGipServerCOLAS_PROD_POOL': '1491968522.39462.0000', 'TS83de0437029': '08e9798694ab2800d8e7f4be61c8a75fea3094b10ded7cb5ddd1facfbd5dd0ddd83ae9c0c29f928512cb0abd122bf2df', 'TS646cb979027': '08e9798694ab2000a41c45d36684997a8ba6562b3a18361f91cdbabdd4228c74fdcf3d7686d80afe088bc850801130009b3f6419e63d2147c5ac9f2ada204e0c84a0a2c3ac0bcb231e14e19b7a2df75b8a19610eec1635bc0eef116c3d74ecc1', 'BIGipServeruc+jAW63kG3h06BOJF04fg': '!Fxzb5danyW7o7uUIX0QzKt07HDsXSxXLKc42L7Aj/Oni+Zp3zHHAwbEMwKbmmO+Y/YlpLUgzexn9bQ==', 'TS017ec985': '01f6e3b1e990e1c8d56bc0ed0723645a21fa91b189ab1100b95aa6b9e4f4b58f51c1685f15a3985a70c9ade20ba890ac6ee604bbbcbde6209896c2ee6ad9f25ea9b71f709d9464a1324c0ad580d791a63da30a9ae48d8efa79c572255f772a85d5e6b2d0dacd1be4109fcda7f053822d346ecbccda', 'TS01f7a357': '01348907372c5a2608cf882c89933c10f7c81218f4623bec03cf8d3b80ca13c48cf857ccc47a32f3338b8fa5e8c9fb3c162459e7af4660355117f609d82cc71ac31b1558a2', 'TS012277fa': '01f6e3b1e94283c1e2b628e8c8e046d581ca71827aab1100b95aa6b9e4f4b58f51c1685f15202ad40da7cce09f088f323a38a14a821deda52bfc9bad4bf2774120c9da106c'}
+2025-10-13 10:37:47 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23035001000062 - SHOTTYS
+2025-10-13 10:37:47 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23035001000066 - SHOTTYS
+2025-10-13 10:37:47 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23035001000068 - SHOTTYS
+2025-10-13 10:37:47 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23038001000812 - SHOTTYS
+2025-10-13 10:37:47 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23038001000818 - SHOTTYS
+2025-10-13 10:37:47 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23039001000141 - SHOTTYS
+2025-10-13 10:37:47 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23067001000273 - SHOTTYS
+2025-10-13 10:37:47 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23079001000649 - SHOTTYS
+2025-10-13 10:37:47 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23079001000657 - SHOTTYS
+2025-10-13 10:37:47 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23079001000663 - SHOTTYS
+2025-10-13 10:37:47 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23080001000133 - SHOTTYS
+2025-10-13 10:37:47 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23133001000108 - SHOTTYS
+2025-10-13 10:37:47 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000833 - SHOTTYS
+2025-10-13 10:37:47 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000838 - SHOTTYS
+2025-10-13 10:37:47 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000846 - SHOTTYS
+2025-10-13 10:37:47 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000850 - SHOTTYS
+2025-10-13 10:37:47 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000861 - SHOTTYS
+2025-10-13 10:37:47 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000862 - SHOTTYS
+2025-10-13 10:37:47 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23214001000092 - SHOTTYS
+2025-10-13 10:37:47 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23214001000094 - SHOTTYS
+2025-10-13 10:37:47 | DEBUG    | scraper:_extract_items_from_page:153 - Extracted 20 items from page
+2025-10-13 10:37:47 | INFO     | scraper:scrape:243 - Found 20 results on page 1 (20 new, 0 duplicates)
+2025-10-13 10:37:47 | DEBUG    | scraper:scrape:256 - Waiting 1.0s before next request
+2025-10-13 10:37:48 | INFO     | scraper:scrape:204 - Fetching page 2...
+2025-10-13 10:37:48 | DEBUG    | scraper:scrape:217 - GET request to https://ttbonline.gov/colasonline/publicPageAdvancedCola.do with params {'action': 'page', 'pgfcn': 'nextset'}
+2025-10-13 10:37:48 | DEBUG    | scraper:scrape:218 - Response cookies: {'TS01f7a357': '0134890737137435f3e7fd8283d4087b77a8da2434537be81003e5a91f74f81363a58e9080cf21650946df0b38e855d4223f8430b7', 'TS012277fa': '01f6e3b1e9e09af12ee4cee74d5fb32d878c51a932ab1100b95aa6b9e4f4b58f51c1685f15202ad40da7cce09f088f323a38a14a82bf5d489c60c14a13f66f4c5d3edb84a3', 'TS83de0437029': '08e9798694ab28009e8f5ca0490e5d610bbeab9e20f3ab0694b4b31a50dba47f4b18df1cc0a0dc226006b6b0289da861', 'TS646cb979027': '08e9798694ab20006cc1c9e45adca6b3aed78e624f3705664efb59c5bfd90c24dbc1b5a2d7d24ec1086f0d57f511300019c29d762bceb3ef827334e80eaa42f1682b61860f3fa216c479cf6f8495177c9db9e944d58ece759d267f312a927d02', 'TS017ec985': '01f6e3b1e9bbdba95bd5383df96435dbc73770b6deab1100b95aa6b9e4f4b58f51c1685f15a3985a70c9ade20ba890ac6ee604bbbcbde6209896c2ee6ad9f25ea9b71f709d7069cfa830356a9bc5848f78dc52f93daa11eb9363711170f9d8f0eae7e86606f82019ae3e319a5a1fa40d08ac7bf634'}
+2025-10-13 10:37:49 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23217001000013 - SHOTTYS
+2025-10-13 10:37:49 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23217001000016 - SHOTTYS
+2025-10-13 10:37:49 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23217001000020 - SHOTTYS
+2025-10-13 10:37:49 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23217001000023 - SHOTTYS
+2025-10-13 10:37:49 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23217001000024 - SHOTTYS
+2025-10-13 10:37:49 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23217001000025 - SHOTTYS
+2025-10-13 10:37:49 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23248001000373 - SHOTTYS
+2025-10-13 10:37:49 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23248001000386 - SHOTTYS
+2025-10-13 10:37:49 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23248001000401 - SHOTTYS
+2025-10-13 10:37:49 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23249001000083 - SHOTTYS
+2025-10-13 10:37:49 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24093001000973 - SHOTTYS
+2025-10-13 10:37:49 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24106001000051 - SHOTTYS
+2025-10-13 10:37:49 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24106001000053 - SHOTTYS
+2025-10-13 10:37:49 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24106001000871 - SHOTTYS
+2025-10-13 10:37:49 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24107001000789 - SHOTTYS
+2025-10-13 10:37:49 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24318001000304 - SHOTTYS
+2025-10-13 10:37:49 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24318001000314 - SHOTTYS
+2025-10-13 10:37:49 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24319001000262 - SHOTTYS
+2025-10-13 10:37:49 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25059001000207 - SHOTTYS
+2025-10-13 10:37:49 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25059001000216 - SHOTTYS
+2025-10-13 10:37:49 | DEBUG    | scraper:_extract_items_from_page:153 - Extracted 20 items from page
+2025-10-13 10:37:49 | INFO     | scraper:scrape:243 - Found 20 results on page 2 (20 new, 0 duplicates)
+2025-10-13 10:37:49 | DEBUG    | scraper:scrape:256 - Waiting 1.0s before next request
+2025-10-13 10:37:50 | INFO     | scraper:scrape:204 - Fetching page 3...
+2025-10-13 10:37:50 | WARNING  | __main__:main:115 - 
+
+Operation cancelled by user
+2025-10-13 10:40:29 | INFO     | __main__:main:33 - ================================================================================
+2025-10-13 10:40:29 | INFO     | __main__:main:34 - TTB COLA Scraper & Sync Tool
+2025-10-13 10:40:29 | INFO     | __main__:main:35 - ================================================================================
+2025-10-13 10:40:29 | INFO     | __main__:main:39 - Initializing TTB scraper...
+2025-10-13 10:40:29 | INFO     | scraper:__init__:40 - Initialized scraper for product: Shottys
+2025-10-13 10:40:29 | DEBUG    | scraper:__init__:41 - Date range: 10/18/2010 to 10/13/2025
+2025-10-13 10:40:29 | DEBUG    | scraper:__init__:42 - Vendor code: 23153
+2025-10-13 10:40:29 | WARNING  | __main__:main:48 - Airtable credentials not found!
+2025-10-13 10:40:29 | WARNING  | __main__:main:49 - Set AIRTABLE_API_KEY and AIRTABLE_BASE_ID environment variables to enable sync.
+2025-10-13 10:40:29 | INFO     | __main__:main:50 - 
+Running scraper in standalone mode (no sync)...
+
+2025-10-13 10:40:29 | INFO     | scraper:scrape:200 - Starting scrape for product: Shottys
+2025-10-13 10:40:29 | INFO     | scraper:scrape:204 - Fetching page 1...
+2025-10-13 10:40:30 | DEBUG    | scraper:scrape:209 - POST request to https://ttbonline.gov/colasonline/publicSearchColasAdvancedProcess.do
+2025-10-13 10:40:30 | DEBUG    | scraper:scrape:210 - Response cookies: {'JSESSIONID': '"x7viYs8ZafTqq8mvsnezNa4SW0qgSspRc1TSUt4U.master:colas-ext-server"', 'TS0128ecc9': '013489073779e9124a85df88a0b92280f8f23387ff0dddb919c66830066662c1de9590e88d2fa3a093eef752bbc0411764ad81b5825b290c29e71f358012d165f24d12fe3f', 'TS01289f9a': '01f6e3b1e9deee8d491b0f24ed9558eec34581cb4749e8f7abc1c1e46b6f61b5b697272d7381e2a0d7f49d9d99b20b6b8b767351bbe5c21c60ff2a5b74cd6ed40cb3418261e01c97770ad11b2e0c4f3b4d9667754c', 'BIGipServerCOLAS_PROD_POOL': '1408082442.39462.0000', 'TS83de0437029': '08e9798694ab2800770f3ab64f580c422cf8de915aa45c459f2bb1a73f335643881957ead719dc8a74162ab9097d111b', 'TS646cb979027': '08e9798694ab20007434d732ceb79f2f82d0ced955e5b389f39d9b37f439045cac7dfed547d484a7080e1ccdc2113000f0e7f21103902a282854533051051e83cf0076da46edc71009dc2e4c3c5180c0b92427b71cdf064da221a9ed5c42c07c', 'BIGipServeruc+jAW63kG3h06BOJF04fg': '!n6YvD69Ui+z3sFIIX0QzKt07HDsXS3n2BB5C4oQ7oycsfMpo4urv4hqzuN7No186VPhcuUoCBvfmoQ==', 'TS017ec985': '01f6e3b1e9c8199856823c9cea9bf0e1519a57eb8349e8f7abc1c1e46b6f61b5b697272d7386502e874c27f396e3128b2c60a8d5c8e70b12231a16b604aaf982f6937a614562f91be146cca8d0e4759a603f5c9813058c9d4a518d914bed9c9548d65709de203c69fb10057167997a4c00147f394e', 'TS01f7a357': '01348907373bda8432b2830633874990d0731f4c0a0dddb919c66830066662c1de9590e88dafe4fac68dffa2c29dbf21a7ce3d4ad51e15fa9c768f4084d6b0e09576763aa9', 'TS012277fa': '01f6e3b1e9210e22d10fb76eda42fd0a048753299949e8f7abc1c1e46b6f61b5b697272d73bfe1d4c51ab3fe27258a9804f336ac0f943fbb2e9602ad6a5b3367a07ab66f6d'}
+2025-10-13 10:40:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23035001000062 - SHOTTYS
+2025-10-13 10:40:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23035001000066 - SHOTTYS
+2025-10-13 10:40:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23035001000068 - SHOTTYS
+2025-10-13 10:40:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23038001000812 - SHOTTYS
+2025-10-13 10:40:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23038001000818 - SHOTTYS
+2025-10-13 10:40:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23039001000141 - SHOTTYS
+2025-10-13 10:40:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23067001000273 - SHOTTYS
+2025-10-13 10:40:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23079001000649 - SHOTTYS
+2025-10-13 10:40:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23079001000657 - SHOTTYS
+2025-10-13 10:40:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23079001000663 - SHOTTYS
+2025-10-13 10:40:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23080001000133 - SHOTTYS
+2025-10-13 10:40:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23133001000108 - SHOTTYS
+2025-10-13 10:40:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000833 - SHOTTYS
+2025-10-13 10:40:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000838 - SHOTTYS
+2025-10-13 10:40:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000846 - SHOTTYS
+2025-10-13 10:40:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000850 - SHOTTYS
+2025-10-13 10:40:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000861 - SHOTTYS
+2025-10-13 10:40:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000862 - SHOTTYS
+2025-10-13 10:40:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23214001000092 - SHOTTYS
+2025-10-13 10:40:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23214001000094 - SHOTTYS
+2025-10-13 10:40:30 | DEBUG    | scraper:_extract_items_from_page:153 - Extracted 20 items from page
+2025-10-13 10:40:30 | INFO     | scraper:scrape:243 - Found 20 results on page 1 (20 new, 0 duplicates)
+2025-10-13 10:40:30 | DEBUG    | scraper:scrape:256 - Waiting 1.0s before next request
+2025-10-13 10:40:31 | WARNING  | __main__:main:116 - 
+
+Operation cancelled by user
+2025-10-13 10:41:26 | INFO     | __main__:main:33 - ================================================================================
+2025-10-13 10:41:26 | INFO     | __main__:main:34 - TTB COLA Scraper & Sync Tool
+2025-10-13 10:41:26 | INFO     | __main__:main:35 - ================================================================================
+2025-10-13 10:41:26 | INFO     | __main__:main:39 - Initializing TTB scraper...
+2025-10-13 10:41:26 | INFO     | scraper:__init__:40 - Initialized scraper for product: Shottys
+2025-10-13 10:41:26 | DEBUG    | scraper:__init__:41 - Date range: 10/18/2010 to 10/13/2025
+2025-10-13 10:41:26 | DEBUG    | scraper:__init__:42 - Vendor code: 23153
+2025-10-13 10:41:26 | WARNING  | __main__:main:48 - Airtable credentials not found!
+2025-10-13 10:41:26 | WARNING  | __main__:main:49 - Set AIRTABLE_API_KEY and AIRTABLE_BASE_ID environment variables to enable sync.
+2025-10-13 10:41:26 | INFO     | __main__:main:50 - 
+Running scraper in standalone mode (no sync)...
+
+2025-10-13 10:41:26 | INFO     | scraper:scrape:200 - Starting scrape for product: Shottys
+2025-10-13 10:41:26 | INFO     | scraper:scrape:204 - Fetching page 1...
+2025-10-13 10:41:28 | DEBUG    | scraper:scrape:209 - POST request to https://ttbonline.gov/colasonline/publicSearchColasAdvancedProcess.do
+2025-10-13 10:41:28 | DEBUG    | scraper:scrape:210 - Response cookies: {'JSESSIONID': '"hRF1ALzVdNVn2dG9PH4Md8hIdWYTyktZeD4-8_TE.master:colas-ext-server"', 'TS0128ecc9': '0134890737ff2b752577cb853dd47227a14bb038e9e64d1382374a08680c28320a4f23505ff842b8845344446ca748ccb56daf5dfb9a2094ef7a7a83ba8c4fb5f8fa1d8f45', 'TS01289f9a': '01f6e3b1e9aeb51038826ad44d87e1e8c2050b7e233019559da33b5061832d8b52c4533e14d5fa68b5c8da4271d4638e809c5bead3150173efcc211f548c7445b71ffe77963c86e2405a5a724763b02d4f2e087e50', 'BIGipServerCOLAS_PROD_POOL': '1491968522.39462.0000', 'TS83de0437029': '08e9798694ab2800f786bc2ba7e667d64368f7769967ff7a37a26120be71935aaa54a9c4ea226144f4874908d609d606', 'TS646cb979027': '08e9798694ab200089626e43f07ac5e52bcbb3e510339b6302cc48ee7de33ed5a3e10538d4f3b6c5088ff4eb1d113000cd867ddec6b2df53a9f69bd6808e91f361b7b17163e4a19fe092a01cbe6deb55a6be025b12695ad1a7cb887b59dfb61c', 'BIGipServeruc+jAW63kG3h06BOJF04fg': '!qpEbwQVrDFiA9W4IX0QzKt07HDsXS18pj0V/PL5nBfogbdKsNIa3fdSe+BuHORDW2wI+4VWNH7vW0A==', 'TS017ec985': '01f6e3b1e9d1aa37df4d177eef3942e1e01f6961413019559da33b5061832d8b52c4533e14b8e7614e0e787f6573620fa156659f645d60a1d68da6c3df5c83ab1cdb168001c847fa423ed3d348a0f31d86331c245b9f96fcc773689fcdf513a439e7ec0e7855861032f59be6f9a28911666c9cf640', 'TS01f7a357': '01348907378abe596b1b66c0ccf7e1d8406a800f10e64d1382374a08680c28320a4f23505f12055e2060d56fbc5e8278a0fbb46798b756fc7ff711c8f0b4ba0aaa28f08d71', 'TS012277fa': '01f6e3b1e948b78fea5adaf74e7068807d0df9fe413019559da33b5061832d8b52c4533e147e58ba24f0e71986dee2ceaab19abc29c031e7cdd69f979d592e49f04aff052a'}
+2025-10-13 10:41:28 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23035001000062 - SHOTTYS
+2025-10-13 10:41:28 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23035001000066 - SHOTTYS
+2025-10-13 10:41:28 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23035001000068 - SHOTTYS
+2025-10-13 10:41:28 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23038001000812 - SHOTTYS
+2025-10-13 10:41:28 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23038001000818 - SHOTTYS
+2025-10-13 10:41:28 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23039001000141 - SHOTTYS
+2025-10-13 10:41:28 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23067001000273 - SHOTTYS
+2025-10-13 10:41:28 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23079001000649 - SHOTTYS
+2025-10-13 10:41:28 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23079001000657 - SHOTTYS
+2025-10-13 10:41:28 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23079001000663 - SHOTTYS
+2025-10-13 10:41:28 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23080001000133 - SHOTTYS
+2025-10-13 10:41:28 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23133001000108 - SHOTTYS
+2025-10-13 10:41:28 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000833 - SHOTTYS
+2025-10-13 10:41:28 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000838 - SHOTTYS
+2025-10-13 10:41:28 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000846 - SHOTTYS
+2025-10-13 10:41:28 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000850 - SHOTTYS
+2025-10-13 10:41:28 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000861 - SHOTTYS
+2025-10-13 10:41:28 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000862 - SHOTTYS
+2025-10-13 10:41:28 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23214001000092 - SHOTTYS
+2025-10-13 10:41:28 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23214001000094 - SHOTTYS
+2025-10-13 10:41:28 | DEBUG    | scraper:_extract_items_from_page:153 - Extracted 20 items from page
+2025-10-13 10:41:28 | INFO     | scraper:scrape:243 - Found 20 results on page 1 (20 new, 0 duplicates)
+2025-10-13 10:41:28 | DEBUG    | scraper:scrape:256 - Waiting 1.0s before next request
+2025-10-13 10:41:29 | INFO     | scraper:scrape:204 - Fetching page 2...
+2025-10-13 10:41:29 | DEBUG    | scraper:scrape:217 - GET request to https://ttbonline.gov/colasonline/publicPageAdvancedCola.do with params {'action': 'page', 'pgfcn': 'nextset'}
+2025-10-13 10:41:29 | DEBUG    | scraper:scrape:218 - Response cookies: {'TS01f7a357': '013489073779422616af3f8188021cc080731318bf2d35f60e87e6c1b98c1aa595fb685a72045a215d258cec4880c241f07d32a342', 'TS012277fa': '01f6e3b1e9b6e3ded2f9b613b5f604be32f0b0ea9a3019559da33b5061832d8b52c4533e147e58ba24f0e71986dee2ceaab19abc29551534541f9a16576f4e569e1188e065', 'TS83de0437029': '08e9798694ab2800f63c6d4b171be493ada0db95c665fd4c4cf0494fb1df3ff8d7c4ecc64c2fd39ee4a4be3c5a0a96dc', 'TS646cb979027': '08e9798694ab2000e95a2b7149131d9fa7ea982bd805df913042c414c17d0d4023c1516c04a001e808660717f91130008cdd25b3dd815132e8443a4aed8a7b38d1c52402583713b8eb977f0d878aa5fbcd6798469c6b41a7ade2a96099111e86', 'TS017ec985': '01f6e3b1e9eef7ede74ccbf57b578151703294706a3019559da33b5061832d8b52c4533e14b8e7614e0e787f6573620fa156659f645d60a1d68da6c3df5c83ab1cdb1680011f3f2c58b9d3b1a2a60a13fb0f2d91d514e0834c95a6de87d20a83d5ab3577d4cc1d2b9f9f4aa9b58b77d21c23e0b671'}
+2025-10-13 10:41:29 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23217001000013 - SHOTTYS
+2025-10-13 10:41:29 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23217001000016 - SHOTTYS
+2025-10-13 10:41:29 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23217001000020 - SHOTTYS
+2025-10-13 10:41:29 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23217001000023 - SHOTTYS
+2025-10-13 10:41:29 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23217001000024 - SHOTTYS
+2025-10-13 10:41:29 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23217001000025 - SHOTTYS
+2025-10-13 10:41:29 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23248001000373 - SHOTTYS
+2025-10-13 10:41:29 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23248001000386 - SHOTTYS
+2025-10-13 10:41:29 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23248001000401 - SHOTTYS
+2025-10-13 10:41:29 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23249001000083 - SHOTTYS
+2025-10-13 10:41:29 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24093001000973 - SHOTTYS
+2025-10-13 10:41:29 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24106001000051 - SHOTTYS
+2025-10-13 10:41:29 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24106001000053 - SHOTTYS
+2025-10-13 10:41:29 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24106001000871 - SHOTTYS
+2025-10-13 10:41:29 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24107001000789 - SHOTTYS
+2025-10-13 10:41:29 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24318001000304 - SHOTTYS
+2025-10-13 10:41:29 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24318001000314 - SHOTTYS
+2025-10-13 10:41:29 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24319001000262 - SHOTTYS
+2025-10-13 10:41:29 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25059001000207 - SHOTTYS
+2025-10-13 10:41:29 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25059001000216 - SHOTTYS
+2025-10-13 10:41:29 | DEBUG    | scraper:_extract_items_from_page:153 - Extracted 20 items from page
+2025-10-13 10:41:29 | INFO     | scraper:scrape:243 - Found 20 results on page 2 (20 new, 0 duplicates)
+2025-10-13 10:41:29 | DEBUG    | scraper:scrape:256 - Waiting 1.0s before next request
+2025-10-13 10:41:30 | INFO     | scraper:scrape:204 - Fetching page 3...
+2025-10-13 10:41:30 | DEBUG    | scraper:scrape:217 - GET request to https://ttbonline.gov/colasonline/publicPageAdvancedCola.do with params {'action': 'page', 'pgfcn': 'nextset'}
+2025-10-13 10:41:30 | DEBUG    | scraper:scrape:218 - Response cookies: {'TS01f7a357': '0134890737d97799a02a6b4fa268fe12532ec5d9cd7580e9c4020fdf6916876b3849068c43691a4e64d2309dda965dfeef9f04d738', 'TS012277fa': '01f6e3b1e9ada113a14a3e056a5b72c0af8595b2693019559da33b5061832d8b52c4533e147e58ba24f0e71986dee2ceaab19abc295d04a511483a0b2b9a86775086c18897', 'TS83de0437029': '08e9798694ab2800b6b272582d6c25e326c03b6d736aa1f937ccc03026a2bcc0d49c76b29be05f427de23d0295a7f020', 'TS646cb979027': '08e9798694ab20007935803fda8553245b3d9b4665b8f46f5bd15d3a42a8c1f92b61aed996a71ed508e64f0657113000d836fac1291bc27da321ce8897296d19555699d051de02d37f4fc83e34bd8cde694e32d9bf07475ffd89eed351a05d44', 'TS017ec985': '01f6e3b1e945f863490f5fc5e734ce3d19f32be6df3019559da33b5061832d8b52c4533e14b8e7614e0e787f6573620fa156659f645d60a1d68da6c3df5c83ab1cdb168001f77122e6cb537431ff02e0aa414789686c747e4bdb5bf76af39c0b29e3ef95426c1bc557e3ff1621425e508eb8d6b39d'}
+2025-10-13 10:41:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25059001000222 - SHOTTYS
+2025-10-13 10:41:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25059001000227 - SHOTTYS
+2025-10-13 10:41:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25171001000671 - SHOTTYS
+2025-10-13 10:41:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25171001000673 - SHOTTYS
+2025-10-13 10:41:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25171001000675 - SHOTTYS
+2025-10-13 10:41:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25171001000676 - SHOTTYS
+2025-10-13 10:41:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25267001000205 - SHOTTYS
+2025-10-13 10:41:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25267001000210 - SHOTTYS
+2025-10-13 10:41:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25267001000214 - SHOTTYS
+2025-10-13 10:41:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25267001000217 - SHOTTYS
+2025-10-13 10:41:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25269001000206 - SHOTTYS
+2025-10-13 10:41:30 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25269001000214 - SHOTTYS
+2025-10-13 10:41:30 | DEBUG    | scraper:_extract_items_from_page:153 - Extracted 12 items from page
+2025-10-13 10:41:30 | INFO     | scraper:scrape:243 - Found 12 results on page 3 (12 new, 0 duplicates)
+2025-10-13 10:41:30 | INFO     | scraper:scrape:252 - Reached last page
+2025-10-13 10:41:30 | SUCCESS  | scraper:scrape:259 - Scraping completed! Total results: 52
+2025-10-13 10:41:30 | INFO     | __main__:main:57 - Saving 52 items to ttb_results.json
+2025-10-13 10:41:30 | SUCCESS  | __main__:main:60 - Results saved to ttb_results.json
+2025-10-13 10:41:30 | INFO     | __main__:main:62 - ================================================================================
+2025-10-13 10:41:30 | SUCCESS  | __main__:main:63 - Scraping completed successfully!
+2025-10-13 10:41:30 | INFO     | __main__:main:64 - ================================================================================
+2025-10-13 10:42:34 | INFO     | __main__:main:33 - ================================================================================
+2025-10-13 10:42:34 | INFO     | __main__:main:34 - TTB COLA Scraper & Sync Tool
+2025-10-13 10:42:34 | INFO     | __main__:main:35 - ================================================================================
+2025-10-13 10:42:34 | INFO     | __main__:main:39 - Initializing TTB scraper...
+2025-10-13 10:42:34 | INFO     | scraper:__init__:40 - Initialized scraper for product: Shottys
+2025-10-13 10:42:34 | DEBUG    | scraper:__init__:41 - Date range: 10/18/2010 to 10/13/2025
+2025-10-13 10:42:34 | DEBUG    | scraper:__init__:42 - Vendor code: 23153
+2025-10-13 10:42:34 | INFO     | __main__:main:68 - Initializing Airtable adapter...
+2025-10-13 10:42:34 | INFO     | adapters:__init__:86 - Initialized Airtable adapter for base apprljryyPQcUXuy7, table 'TTB Reference (New)'
+2025-10-13 10:42:34 | INFO     | __main__:main:76 - Using sync strategy: incremental
+2025-10-13 10:42:34 | INFO     | sync_strategy:sync:78 - ============================================================
+2025-10-13 10:42:34 | INFO     | sync_strategy:sync:79 - Starting Incremental Sync Strategy
+2025-10-13 10:42:34 | INFO     | sync_strategy:sync:80 - ============================================================
+2025-10-13 10:42:34 | INFO     | sync_strategy:sync:83 - Step 1: Retrieving data from source...
+2025-10-13 10:42:34 | INFO     | scraper:scrape:200 - Starting scrape for product: Shottys
+2025-10-13 10:42:34 | INFO     | scraper:scrape:204 - Fetching page 1...
+2025-10-13 10:42:35 | DEBUG    | scraper:scrape:209 - POST request to https://ttbonline.gov/colasonline/publicSearchColasAdvancedProcess.do
+2025-10-13 10:42:35 | DEBUG    | scraper:scrape:210 - Response cookies: {'JSESSIONID': '"4KIfRbL89Vf7zY0FmFuyUP8Xk9oPO_iJO5_nElZs.master:colas-ext-server"', 'TS0128ecc9': '01348907377a3a43db6f020778efb0ccef7d55119d1dc1cbbf9aef163b0ba7173d5bf10ade90da9c52b514f97bfe149f8b191b81a498743de039172c473e2e586527d1121e', 'TS01289f9a': '01f6e3b1e9c00482c2785ae91d08ceeefe843f9b40ddea7df72ef567ad1fd86a6e103cfad486cd41370ab6b4ae57447d02576d72de1fc12fa8a91224e33ee5e8d8eb56dd43e4915687919cfbf241f4ffd8d9701012', 'BIGipServerCOLAS_PROD_POOL': '1491968522.39462.0000', 'TS83de0437029': '08e9798694ab2800462d1a277aaae04e604b4e76233031d955246723dbb8b074645fc86ca973fda60a839c21574a6df9', 'TS646cb979027': '08e9798694ab20008b80b7717aa738bd40f880f2b212738e16a20b9aafdb5ecc8c5615a7248ff548088e686ee3113000ab76a6c41cf696b5d7b9d1a2b1770054e1651f6b2d12a33a846b7595699bd111d559a156c2efb4a3bfa8d21f7ed3bd0e', 'BIGipServeruc+jAW63kG3h06BOJF04fg': '!SYOP6LUB6KWBGqoIX0QzKt07HDsXS8gMguFbxX1+ZaJwjKoLMylP4JkjKhBnCFrR6IFBy7Ul+J3OfA==', 'TS017ec985': '01f6e3b1e92a55ff87747e90102f0130b609677aa3ddea7df72ef567ad1fd86a6e103cfad4b94fcb7ce6095fe4af218eb5e5967edd0def700a82c208042150afd14c5c33f9b5d596c3f5fd1926485a9690499599aea04fcb99dad402d547fc561de98cef59b7f5fca6dc361798c723a99173e5dd17', 'TS01f7a357': '0134890737258d9ebbc9837eabf9806054019a65ca1dc1cbbf9aef163b0ba7173d5bf10ade3624c4e3a637a5cfdcf49599bcc6522beb938274a4ae082ae18d4fe00d5a30b6', 'TS012277fa': '01f6e3b1e9b7b4ca9fef99447dc9265e4ac3142163ddea7df72ef567ad1fd86a6e103cfad42cf274d89188cc4d2df986934b950ec00499a6b8e425c498f5e9a77dd4d6fbd9'}
+2025-10-13 10:42:35 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23035001000062 - SHOTTYS
+2025-10-13 10:42:35 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23035001000066 - SHOTTYS
+2025-10-13 10:42:35 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23035001000068 - SHOTTYS
+2025-10-13 10:42:35 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23038001000812 - SHOTTYS
+2025-10-13 10:42:35 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23038001000818 - SHOTTYS
+2025-10-13 10:42:35 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23039001000141 - SHOTTYS
+2025-10-13 10:42:35 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23067001000273 - SHOTTYS
+2025-10-13 10:42:35 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23079001000649 - SHOTTYS
+2025-10-13 10:42:35 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23079001000657 - SHOTTYS
+2025-10-13 10:42:35 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23079001000663 - SHOTTYS
+2025-10-13 10:42:35 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23080001000133 - SHOTTYS
+2025-10-13 10:42:35 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23133001000108 - SHOTTYS
+2025-10-13 10:42:35 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000833 - SHOTTYS
+2025-10-13 10:42:35 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000838 - SHOTTYS
+2025-10-13 10:42:35 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000846 - SHOTTYS
+2025-10-13 10:42:35 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000850 - SHOTTYS
+2025-10-13 10:42:35 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000861 - SHOTTYS
+2025-10-13 10:42:35 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000862 - SHOTTYS
+2025-10-13 10:42:35 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23214001000092 - SHOTTYS
+2025-10-13 10:42:35 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23214001000094 - SHOTTYS
+2025-10-13 10:42:35 | DEBUG    | scraper:_extract_items_from_page:153 - Extracted 20 items from page
+2025-10-13 10:42:35 | INFO     | scraper:scrape:243 - Found 20 results on page 1 (20 new, 0 duplicates)
+2025-10-13 10:42:35 | DEBUG    | scraper:scrape:256 - Waiting 1.0s before next request
+2025-10-13 10:42:36 | INFO     | scraper:scrape:204 - Fetching page 2...
+2025-10-13 10:42:37 | DEBUG    | scraper:scrape:217 - GET request to https://ttbonline.gov/colasonline/publicPageAdvancedCola.do with params {'action': 'page', 'pgfcn': 'nextset'}
+2025-10-13 10:42:37 | DEBUG    | scraper:scrape:218 - Response cookies: {'TS01f7a357': '01348907379c597ac52b4a5cc82ecbd5c80c78a7bad2d01b2ad1cbdf4df068a357fe9132d44fa0675d219e740aa7d0556a80ecf8cf', 'TS012277fa': '01f6e3b1e921c67675cb809ccdbf40f5a23b7a1f26ddea7df72ef567ad1fd86a6e103cfad42cf274d89188cc4d2df986934b950ec093be5a1987042c18ba0dff29cccd4cb3', 'TS83de0437029': '08e9798694ab2800358af8254232c572afec3d2c27c983db61b8569a0d74a49770e842a9c553d076df39c093774c9567', 'TS646cb979027': '08e9798694ab200054cef4bc7cdbe7ba696760918926499a9049fa848671c299d408236828c086500853d870c0113000c8e275ec20a42edc76842b061f36322fd041e15a14f87d9c7c050a087e196ed1aa8a2f4c5ba9c8399158d83a0041b9b4', 'TS017ec985': '01f6e3b1e9306ef55271c56038a10a149d8cff14bbddea7df72ef567ad1fd86a6e103cfad4b94fcb7ce6095fe4af218eb5e5967edd0def700a82c208042150afd14c5c33f961142c25505d9e9b055349aefcf32cd7c6121ad6726c667f633bfff66a36f63061e977c82a7f37bfccb96f925e21bd52'}
+2025-10-13 10:42:37 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23217001000013 - SHOTTYS
+2025-10-13 10:42:37 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23217001000016 - SHOTTYS
+2025-10-13 10:42:37 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23217001000020 - SHOTTYS
+2025-10-13 10:42:37 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23217001000023 - SHOTTYS
+2025-10-13 10:42:37 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23217001000024 - SHOTTYS
+2025-10-13 10:42:37 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23217001000025 - SHOTTYS
+2025-10-13 10:42:37 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23248001000373 - SHOTTYS
+2025-10-13 10:42:37 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23248001000386 - SHOTTYS
+2025-10-13 10:42:37 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23248001000401 - SHOTTYS
+2025-10-13 10:42:37 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23249001000083 - SHOTTYS
+2025-10-13 10:42:37 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24093001000973 - SHOTTYS
+2025-10-13 10:42:37 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24106001000051 - SHOTTYS
+2025-10-13 10:42:37 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24106001000053 - SHOTTYS
+2025-10-13 10:42:37 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24106001000871 - SHOTTYS
+2025-10-13 10:42:37 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24107001000789 - SHOTTYS
+2025-10-13 10:42:37 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24318001000304 - SHOTTYS
+2025-10-13 10:42:37 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24318001000314 - SHOTTYS
+2025-10-13 10:42:37 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24319001000262 - SHOTTYS
+2025-10-13 10:42:37 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25059001000207 - SHOTTYS
+2025-10-13 10:42:37 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25059001000216 - SHOTTYS
+2025-10-13 10:42:37 | DEBUG    | scraper:_extract_items_from_page:153 - Extracted 20 items from page
+2025-10-13 10:42:37 | INFO     | scraper:scrape:243 - Found 20 results on page 2 (20 new, 0 duplicates)
+2025-10-13 10:42:37 | DEBUG    | scraper:scrape:256 - Waiting 1.0s before next request
+2025-10-13 10:42:38 | INFO     | scraper:scrape:204 - Fetching page 3...
+2025-10-13 10:42:38 | DEBUG    | scraper:scrape:217 - GET request to https://ttbonline.gov/colasonline/publicPageAdvancedCola.do with params {'action': 'page', 'pgfcn': 'nextset'}
+2025-10-13 10:42:38 | DEBUG    | scraper:scrape:218 - Response cookies: {'TS01f7a357': '0134890737f54f6eb96e5676b3631d020f61d8df1eb30f612921532bca4c43fddedbe36580f271938dc4dbdcbaf0e9aa7a1f10216c', 'TS012277fa': '01f6e3b1e961316d34ab91fe340461c74dbc180d31ddea7df72ef567ad1fd86a6e103cfad42cf274d89188cc4d2df986934b950ec013dd721c459aa7a56c87d289e69a6c1a', 'TS83de0437029': '08e9798694ab2800a15edaa9564a1c9d3f3628966cc7add766756e4010dae111462522dda45bfe2c4e70000c5a204dd9', 'TS646cb979027': '08e9798694ab200046b936b454bc0f6d1fe54da57cef371cde81f5fde2556c971b6438bc44a8202b0810ca254711300009ebe4c040b90615ef243d1a213cff45f68d19fceeb223e2328f89499c4ea756b9cb6596dd04523f3a38e4f21b7a3512', 'TS017ec985': '01f6e3b1e95bdc991dcb98f9966063a3ba148b55e4ddea7df72ef567ad1fd86a6e103cfad4b94fcb7ce6095fe4af218eb5e5967edd0def700a82c208042150afd14c5c33f91248265d7b74a22935be899ea0bd365b570b7b5c3bfa69eda00a18ce20b3b946ccadb4e80277bbe55c81cc82aa517441'}
+2025-10-13 10:42:38 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25059001000222 - SHOTTYS
+2025-10-13 10:42:38 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25059001000227 - SHOTTYS
+2025-10-13 10:42:38 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25171001000671 - SHOTTYS
+2025-10-13 10:42:38 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25171001000673 - SHOTTYS
+2025-10-13 10:42:38 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25171001000675 - SHOTTYS
+2025-10-13 10:42:38 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25171001000676 - SHOTTYS
+2025-10-13 10:42:38 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25267001000205 - SHOTTYS
+2025-10-13 10:42:38 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25267001000210 - SHOTTYS
+2025-10-13 10:42:38 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25267001000214 - SHOTTYS
+2025-10-13 10:42:38 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25267001000217 - SHOTTYS
+2025-10-13 10:42:38 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25269001000206 - SHOTTYS
+2025-10-13 10:42:38 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25269001000214 - SHOTTYS
+2025-10-13 10:42:38 | DEBUG    | scraper:_extract_items_from_page:153 - Extracted 12 items from page
+2025-10-13 10:42:38 | INFO     | scraper:scrape:243 - Found 12 results on page 3 (12 new, 0 duplicates)
+2025-10-13 10:42:38 | INFO     | scraper:scrape:252 - Reached last page
+2025-10-13 10:42:38 | SUCCESS  | scraper:scrape:259 - Scraping completed! Total results: 52
+2025-10-13 10:42:38 | INFO     | sync_strategy:sync:85 - Retrieved 52 items from source
+2025-10-13 10:42:38 | INFO     | sync_strategy:sync:92 - Step 2: Checking for existing records in storage...
+2025-10-13 10:42:38 | DEBUG    | adapters:get_existing_ids:139 - Fetching existing TTB IDs from Airtable...
+2025-10-13 10:42:39 | INFO     | adapters:get_existing_ids:144 - Found 80 existing records in Airtable
+2025-10-13 10:42:39 | INFO     | sync_strategy:sync:94 - Found 80 existing records in storage
+2025-10-13 10:42:39 | INFO     | sync_strategy:sync:101 - Step 3: Filtering results - 22 new, 30 already exist
+2025-10-13 10:42:39 | INFO     | sync_strategy:sync:105 - Step 4: Creating 22 new records in storage...
+2025-10-13 10:42:39 | INFO     | adapters:create_items:230 - Creating 22 new records in Airtable...
+2025-10-13 10:42:40 | DEBUG    | adapters:create_items:243 - Created batch 1: 10 records
+2025-10-13 10:42:40 | DEBUG    | adapters:create_items:243 - Created batch 2: 10 records
+2025-10-13 10:42:40 | DEBUG    | adapters:create_items:243 - Created batch 3: 2 records
+2025-10-13 10:42:40 | SUCCESS  | adapters:create_items:245 - Successfully created 22 records in Airtable
+2025-10-13 10:42:40 | INFO     | sync_strategy:sync:116 - Step 5: Marking 50 records as deprecated...
+2025-10-13 10:42:40 | INFO     | adapters:mark_as_deprecated:186 - Marking 50 records as deprecated...
+2025-10-13 10:42:41 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 19288001000360
+2025-10-13 10:42:42 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 21073001000017
+2025-10-13 10:42:42 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 19214001000358
+2025-10-13 10:42:43 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 22168001000776
+2025-10-13 10:42:43 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 19309001000326
+2025-10-13 10:42:44 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 19108001000297
+2025-10-13 10:42:44 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 20119001000492
+2025-10-13 10:42:45 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 21073001000020
+2025-10-13 10:42:45 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 21227001000048
+2025-10-13 10:42:46 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 20265001000247
+2025-10-13 10:42:46 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 21073001000035
+2025-10-13 10:42:47 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 22350001000703
+2025-10-13 10:42:47 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 19214001000746
+2025-10-13 10:42:48 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 21227001000058
+2025-10-13 10:42:48 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 19108001000312
+2025-10-13 10:42:49 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 22098001000729
+2025-10-13 10:42:49 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 24062001000024
+2025-10-13 10:42:50 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 21227001000046
+2025-10-13 10:42:50 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 21073001000028
+2025-10-13 10:42:51 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 22162001000109
+2025-10-13 10:42:51 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 21021001000763
+2025-10-13 10:42:52 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 21227001000061
+2025-10-13 10:42:52 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 22004001000570
+2025-10-13 10:42:53 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 19290001000223
+2025-10-13 10:42:53 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 19269001000788
+2025-10-13 10:42:54 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 19339001000676
+2025-10-13 10:42:55 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 21017001000032
+2025-10-13 10:42:55 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 19108001000307
+2025-10-13 10:42:56 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 22162001000113
+2025-10-13 10:42:57 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 19214001000725
+2025-10-13 10:42:57 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 21229001000854
+2025-10-13 10:42:58 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 17020001000043
+2025-10-13 10:42:58 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 21227001000056
+2025-10-13 10:42:59 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 19214001000337
+2025-10-13 10:42:59 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 22162001000111
+2025-10-13 10:43:00 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 21083001001156
+2025-10-13 10:43:00 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 22162001000112
+2025-10-13 10:43:01 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 22356001000617
+2025-10-13 10:43:01 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 20119001000483
+2025-10-13 10:43:02 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 19269001000779
+2025-10-13 10:43:02 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 17020001000041
+2025-10-13 10:43:03 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 21209001000915
+2025-10-13 10:43:03 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 18339001000455
+2025-10-13 10:43:04 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 22173001000365
+2025-10-13 10:43:04 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 21148001000419
+2025-10-13 10:43:05 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 21209001000962
+2025-10-13 10:43:06 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 21021001000742
+2025-10-13 10:43:06 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 19269001000761
+2025-10-13 10:43:07 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 22006001000236
+2025-10-13 10:43:07 | DEBUG    | adapters:mark_as_deprecated:202 - Marked as deprecated: 19288001000392
+2025-10-13 10:43:07 | SUCCESS  | adapters:mark_as_deprecated:209 - Successfully marked 50 records as deprecated
+2025-10-13 10:43:07 | SUCCESS  | sync_strategy:sync:128 - ============================================================
+2025-10-13 10:43:07 | SUCCESS  | sync_strategy:sync:129 - Incremental Sync Completed!
+2025-10-13 10:43:07 | SUCCESS  | sync_strategy:sync:130 - Total: 52 | New: 22 | Skipped: 30 | Deprecated: 50
+2025-10-13 10:43:07 | SUCCESS  | sync_strategy:sync:131 - ============================================================
+2025-10-13 10:43:07 | INFO     | __main__:main:99 - 
+Creating JSON backup...
+2025-10-13 10:43:07 | INFO     | scraper:scrape:200 - Starting scrape for product: Shottys
+2025-10-13 10:43:07 | INFO     | scraper:scrape:204 - Fetching page 1...
+2025-10-13 10:43:08 | DEBUG    | scraper:scrape:209 - POST request to https://ttbonline.gov/colasonline/publicSearchColasAdvancedProcess.do
+2025-10-13 10:43:08 | DEBUG    | scraper:scrape:210 - Response cookies: {'JSESSIONID': '"wBKj9VIPp4O1OqVgEhYeFehZc8OeivEf5K0NnyvV.master:colas-ext-server"', 'TS0128ecc9': '0134890737285cb033e28b27a66daba8ab847f45605b502e8095cf157859210c5f668cc5013bcf459d626d08e9ec40169b6b5ae86faef11cb17c4c3ce17328cdb90b6ef383', 'TS01289f9a': '01f6e3b1e9c9208b2f36c61df1ce7dce7fccca7a5748e2929f87c95777a8b4e3f0afb3d3976e1b5b6dd436a436541ebee310cbadfd19f1cd3de2c2bc4b21a0027e8d51a4a2d659b2b073c8139117050429ef8d995f', 'BIGipServerCOLAS_PROD_POOL': '1491968522.39462.0000', 'TS83de0437029': '08e9798694ab28008c1fa9e66eec4e3f3ca67630045735bb80b9a7b0d760b4ff74608896c778e993e08315812883e9a7', 'TS646cb979027': '08e9798694ab200014ade2a8ee96ecd0ee5d713a2381d28f8ab16fd78a500cb473b63580e1fe5917087be804ad113000a02eee1ff9dcb2cd26c02f4cacc11e218e7fb1b669688ad34c2dbbb96ef6ff532f3b339159a83dacf4bbc18081c50120', 'BIGipServeruc+jAW63kG3h06BOJF04fg': '!lPgEe80yqnl4PxEIX0QzKt07HDsXSyyLtdw9vnKT99HP1AghGEsviKCOtuVoYsH7U1d+bpeThajOYA==', 'TS017ec985': '01f6e3b1e948f87c3ba4f4a90218c2ac9acdb0740a48e2929f87c95777a8b4e3f0afb3d3975f9466e469db3c4b460af4fb165c2dcc3d6b884605732716cf05c668d620bdaec0c17eef7298054f90ddf8150f56a753b19e0784cc3dce235615adb5eb60faca9e458dbfc29c6dd530e4d76a2c9841b0', 'TS01f7a357': '01348907375b1362b7adcee8f20017a452922676aa5b502e8095cf157859210c5f668cc5017ffe997e83ae07e25e2011ad21d78f5ec82c56e7a6091881ff78023b88046f58', 'TS012277fa': '01f6e3b1e979f47e33be96e0fcb100f750dafa697148e2929f87c95777a8b4e3f0afb3d3976ade902b5a989f8f34a071fa2a13dc7532ecc214f1f611bd2f5463643ecaf393'}
+2025-10-13 10:43:08 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23035001000062 - SHOTTYS
+2025-10-13 10:43:08 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23035001000066 - SHOTTYS
+2025-10-13 10:43:08 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23035001000068 - SHOTTYS
+2025-10-13 10:43:08 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23038001000812 - SHOTTYS
+2025-10-13 10:43:08 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23038001000818 - SHOTTYS
+2025-10-13 10:43:08 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23039001000141 - SHOTTYS
+2025-10-13 10:43:08 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23067001000273 - SHOTTYS
+2025-10-13 10:43:08 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23079001000649 - SHOTTYS
+2025-10-13 10:43:08 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23079001000657 - SHOTTYS
+2025-10-13 10:43:08 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23079001000663 - SHOTTYS
+2025-10-13 10:43:08 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23080001000133 - SHOTTYS
+2025-10-13 10:43:08 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23133001000108 - SHOTTYS
+2025-10-13 10:43:08 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000833 - SHOTTYS
+2025-10-13 10:43:08 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000838 - SHOTTYS
+2025-10-13 10:43:08 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000846 - SHOTTYS
+2025-10-13 10:43:08 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000850 - SHOTTYS
+2025-10-13 10:43:08 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000861 - SHOTTYS
+2025-10-13 10:43:08 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23213001000862 - SHOTTYS
+2025-10-13 10:43:08 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23214001000092 - SHOTTYS
+2025-10-13 10:43:08 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23214001000094 - SHOTTYS
+2025-10-13 10:43:08 | DEBUG    | scraper:_extract_items_from_page:153 - Extracted 20 items from page
+2025-10-13 10:43:08 | INFO     | scraper:scrape:243 - Found 20 results on page 1 (20 new, 0 duplicates)
+2025-10-13 10:43:08 | DEBUG    | scraper:scrape:256 - Waiting 1.0s before next request
+2025-10-13 10:43:09 | INFO     | scraper:scrape:204 - Fetching page 2...
+2025-10-13 10:43:10 | DEBUG    | scraper:scrape:217 - GET request to https://ttbonline.gov/colasonline/publicPageAdvancedCola.do with params {'action': 'page', 'pgfcn': 'nextset'}
+2025-10-13 10:43:10 | DEBUG    | scraper:scrape:218 - Response cookies: {'TS01f7a357': '01348907376e02164207a61e2ead9f9554c69e5969795c66deb08ced0ea0050454d3e4ad60f35b6ef92f0da2ce0dfa5ba5eb433f1b', 'TS012277fa': '01f6e3b1e9415f46701e1594256a7db13f2768ee6448e2929f87c95777a8b4e3f0afb3d3976ade902b5a989f8f34a071fa2a13dc75f075420c7ba02f2232775fb02ce89469', 'TS83de0437029': '08e9798694ab28004d2155b6122ba76938fb531a54a3da1455b46d5f0119eed199d4ae543dcd47fe2e39f5cb3f0b4f26', 'TS646cb979027': '08e9798694ab2000f1feaeda6a108c924ba7c45c9dca5ed9b654d35a79aaa502f95cecf43f7e030108a89792d71130004567918b401d7b6dd1228e13bda1e5302e102c470b820346203a651242f370937fd38b2e86a583e4b79c4adffd4b37c1', 'TS017ec985': '01f6e3b1e958bc36e80dd44f84d20cc81c5e5da5a548e2929f87c95777a8b4e3f0afb3d3975f9466e469db3c4b460af4fb165c2dcc3d6b884605732716cf05c668d620bdae0346645c8965368b3e6a8f730a07955b0a41f2f6fad04a48ab4c22f87b52a55005e0ed7c72f0dbadcf6770f73ebfe622'}
+2025-10-13 10:43:10 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23217001000013 - SHOTTYS
+2025-10-13 10:43:10 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23217001000016 - SHOTTYS
+2025-10-13 10:43:10 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23217001000020 - SHOTTYS
+2025-10-13 10:43:10 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23217001000023 - SHOTTYS
+2025-10-13 10:43:10 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23217001000024 - SHOTTYS
+2025-10-13 10:43:10 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23217001000025 - SHOTTYS
+2025-10-13 10:43:10 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23248001000373 - SHOTTYS
+2025-10-13 10:43:10 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23248001000386 - SHOTTYS
+2025-10-13 10:43:10 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23248001000401 - SHOTTYS
+2025-10-13 10:43:10 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 23249001000083 - SHOTTYS
+2025-10-13 10:43:10 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24093001000973 - SHOTTYS
+2025-10-13 10:43:10 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24106001000051 - SHOTTYS
+2025-10-13 10:43:10 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24106001000053 - SHOTTYS
+2025-10-13 10:43:10 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24106001000871 - SHOTTYS
+2025-10-13 10:43:10 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24107001000789 - SHOTTYS
+2025-10-13 10:43:10 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24318001000304 - SHOTTYS
+2025-10-13 10:43:10 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24318001000314 - SHOTTYS
+2025-10-13 10:43:10 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 24319001000262 - SHOTTYS
+2025-10-13 10:43:10 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25059001000207 - SHOTTYS
+2025-10-13 10:43:10 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25059001000216 - SHOTTYS
+2025-10-13 10:43:10 | DEBUG    | scraper:_extract_items_from_page:153 - Extracted 20 items from page
+2025-10-13 10:43:10 | INFO     | scraper:scrape:243 - Found 20 results on page 2 (20 new, 0 duplicates)
+2025-10-13 10:43:10 | DEBUG    | scraper:scrape:256 - Waiting 1.0s before next request
+2025-10-13 10:43:11 | INFO     | scraper:scrape:204 - Fetching page 3...
+2025-10-13 10:43:11 | DEBUG    | scraper:scrape:217 - GET request to https://ttbonline.gov/colasonline/publicPageAdvancedCola.do with params {'action': 'page', 'pgfcn': 'nextset'}
+2025-10-13 10:43:11 | DEBUG    | scraper:scrape:218 - Response cookies: {'TS01f7a357': '0134890737a92f4cf3cebdb7cfd541d0927078e6526cda12a91cce701adc3154e9ef69a3c735cf782a3bed2ff13b6a6f404f5acd1a', 'TS012277fa': '01f6e3b1e93e07e82b8a1f95fc9467d20c269c0d1b48e2929f87c95777a8b4e3f0afb3d3976ade902b5a989f8f34a071fa2a13dc75f29393a4f3a045fa60d1f0d3c5b5ca7e', 'TS83de0437029': '08e9798694ab2800475a0186c2c2accd78041a8fb2b0dab1f6a0b9e59a7b46118a04f7fc4dc531974afc43fe1c1e85fa', 'TS646cb979027': '08e9798694ab2000f559d5789fc89a7a2f846e2c15ae25fb86f8224561896119b75bd6efcda65deb085dd82e261130006ac0f9d3b8616df7b0d7d12090f5dc330390aaba20758498622ba874dde92f6ff0a4b7e21b14ccbb08155ba9efb28529', 'TS017ec985': '01f6e3b1e97610634900e7cc28d4aeae5d65e42a5a48e2929f87c95777a8b4e3f0afb3d3975f9466e469db3c4b460af4fb165c2dcc3d6b884605732716cf05c668d620bdaec02ed216ac347880e0ed4e4e0d394aaada44e5b04e0e2c3d3c0f8fe58708a70fd6fd95acbf5347bfd3e38cd3f21db20b'}
+2025-10-13 10:43:11 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25059001000222 - SHOTTYS
+2025-10-13 10:43:11 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25059001000227 - SHOTTYS
+2025-10-13 10:43:11 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25171001000671 - SHOTTYS
+2025-10-13 10:43:11 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25171001000673 - SHOTTYS
+2025-10-13 10:43:11 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25171001000675 - SHOTTYS
+2025-10-13 10:43:11 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25171001000676 - SHOTTYS
+2025-10-13 10:43:11 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25267001000205 - SHOTTYS
+2025-10-13 10:43:11 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25267001000210 - SHOTTYS
+2025-10-13 10:43:11 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25267001000214 - SHOTTYS
+2025-10-13 10:43:11 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25267001000217 - SHOTTYS
+2025-10-13 10:43:11 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25269001000206 - SHOTTYS
+2025-10-13 10:43:11 | DEBUG    | scraper:_extract_items_from_page:148 - Parsed TTB item: 25269001000214 - SHOTTYS
+2025-10-13 10:43:11 | DEBUG    | scraper:_extract_items_from_page:153 - Extracted 12 items from page
+2025-10-13 10:43:11 | INFO     | scraper:scrape:243 - Found 12 results on page 3 (12 new, 0 duplicates)
+2025-10-13 10:43:11 | INFO     | scraper:scrape:252 - Reached last page
+2025-10-13 10:43:11 | SUCCESS  | scraper:scrape:259 - Scraping completed! Total results: 52
+2025-10-13 10:43:11 | INFO     | __main__:main:103 - Saving backup to ttb_results_backup.json
+2025-10-13 10:43:11 | SUCCESS  | __main__:main:109 - Backup saved to ttb_results_backup.json
+2025-10-13 10:43:11 | INFO     | __main__:main:111 - 
+================================================================================
+2025-10-13 10:43:11 | SUCCESS  | __main__:main:112 - All operations completed successfully!
+2025-10-13 10:43:11 | INFO     | __main__:main:113 - ================================================================================
