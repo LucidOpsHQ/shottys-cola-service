@@ -160,9 +160,10 @@ async def run_sync() -> Dict[str, Any]:
         )
 
 
-# For Vercel serverless
+# Export app for Vercel ASGI
+# Vercel's Python runtime supports ASGI directly via Mangum
 from mangum import Mangum
-handler = Mangum(app)
+handler = Mangum(app, lifespan="off", api_gateway_base_path="/api")
 
 
 # For local testing
