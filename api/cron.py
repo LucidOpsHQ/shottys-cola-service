@@ -158,14 +158,6 @@ async def run_sync() -> Dict[str, Any]:
                 "timestamp": time.time()
             }
         )
-
-
-# Export app for Vercel ASGI
-# Vercel's Python runtime supports ASGI directly via Mangum
-from mangum import Mangum
-handler = Mangum(app, lifespan="off", api_gateway_base_path="/api")
-
-
 # For local testing
 if __name__ == "__main__":
     import uvicorn
