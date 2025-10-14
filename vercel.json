@@ -8,7 +8,7 @@
   ],
   "routes": [
     {
-      "src": "/api/cron",
+      "src": "/api/(.*)",
       "dest": "api/cron.py"
     }
   ],
@@ -23,6 +23,7 @@
     "TTB_PRODUCT_NAME": "Shottys",
     "TTB_VENDOR_CODE": "23153",
     "TTB_DELAY": "1.0",
-    "SYNC_STRATEGY": "incremental"
+    "SYNC_STRATEGY": "incremental",
+    "SENTRY_ENVIRONMENT": "production"
   }
 }

@@ -1,0 +1,13 @@
+Collecting uvicorn
+  Obtaining dependency information for uvicorn from https://files.pythonhosted.org/packages/85/cd/584a2ceb5532af99dd09e50919e3615ba99aa127e9850eafe5f31ddfdb9a/uvicorn-0.37.0-py3-none-any.whl.metadata
+  Downloading uvicorn-0.37.0-py3-none-any.whl.metadata (6.6 kB)
+Collecting click>=7.0 (from uvicorn)
+  Obtaining dependency information for click>=7.0 from https://files.pythonhosted.org/packages/db/d3/9dcc0f5797f070ec8edf30fbadfb200e71d9db6b84d211e3b2085a7589a0/click-8.3.0-py3-none-any.whl.metadata
+  Downloading click-8.3.0-py3-none-any.whl.metadata (2.6 kB)
+Requirement already satisfied: h11>=0.8 in c:\python312\lib\site-packages (from uvicorn) (0.16.0)
+Requirement already satisfied: colorama in c:\python312\lib\site-packages (from click>=7.0->uvicorn) (0.4.6)
+Downloading uvicorn-0.37.0-py3-none-any.whl (67 kB)
+   ---------------------------------------- 68.0/68.0 kB 916.4 kB/s eta 0:00:00
+Downloading click-8.3.0-py3-none-any.whl (107 kB)
+   ---------------------------------------- 107.3/107.3 kB 2.1 MB/s eta 0:00:00
+Installing collected packages: click, uvicorn
