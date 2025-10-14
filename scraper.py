@@ -3,13 +3,49 @@ TTB COLA scraper - handles web scraping logic only.
 """
 import httpx
 from bs4 import BeautifulSoup
-from typing import List
+from typing import List, Generator
+from contextlib import contextmanager
 import time
 import re
 from datetime import datetime, timedelta
 from loguru import logger
 
 from models import TTBItem
+
+
+# Global httpx client with persistent cookies
+_global_client: httpx.Client | None = None
+
+
+@contextmanager
+def get_http_client() -> Generator[httpx.Client, None, None]:
+    """
+    Context manager that yields a global httpx client with persistent cookies.
+
+    The client is reused across all scraper runs to maintain session state,
+    including cookies. This allows the scraper to maintain authentication
+    and session data between function invocations.
+
+    Yields:
+        httpx.Client with persistent cookies and connection pooling
+    """
+    global _global_client
+
+    if _global_client is None:
+        logger.info("Creating new global httpx client with persistent cookies")
+        _global_client = httpx.Client(
+            follow_redirects=True,
+            timeout=30.0,
+            verify=False,
+        )
+    else:
+        logger.debug(f"Reusing global httpx client (cookies: {len(_global_client.cookies)} items)")
+
+    try:
+        yield _global_client
+    except Exception:
+        # If there's an error, don't close the client - keep it for next run
+        raise
 
 
 class TTBScraper:
@@ -199,7 +235,9 @@ class TTBScraper:
 
         logger.info(f"Starting scrape for product: {self.product_name}")
 
-        with httpx.Client(headers=self._get_headers(), follow_redirects=True, timeout=30.0, verify=False) as client:
+        with get_http_client() as client:
+            # Set headers for this scrape session
+            client.headers.update(self._get_headers())
             while True:
                 logger.info(f"Fetching page {page}...")
 
