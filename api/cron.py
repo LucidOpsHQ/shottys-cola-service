@@ -114,7 +114,9 @@ async def run_sync() -> Dict[str, Any]:
         # Initialize Airtable adapter
         logger.info("Initializing Airtable adapter...")
         airtable = AirtableAdapter(
-            table_name=os.getenv("AIRTABLE_TABLE_NAME", "TTB COLAs")
+            table_name=os.getenv("AIRTABLE_TABLE_NAME", "TTB COLAs"),
+            fetch_documents=os.getenv("FETCH_DOCUMENTS", "false").lower() == "true",
+            two_captcha_api_key=os.getenv("TWO_CAPTCHA_API_KEY")
         )
 
         # Determine sync strategy
