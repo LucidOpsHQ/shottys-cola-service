@@ -121,7 +121,7 @@ class TwoCaptchaSolver:
 class ColaDocumentFetcher:
     """Fetches COLA documents from TTB, handling captcha and generating PDFs."""
 
-    def __init__(self, two_captcha_api_key: str, output_dir: str = "./cola_pdfs"):
+    def __init__(self, two_captcha_api_key: str):
         """
         Initialize the document fetcher.
 
@@ -130,10 +130,8 @@ class ColaDocumentFetcher:
             output_dir: Directory to save PDFs
         """
         self.captcha_solver = TwoCaptchaSolver(two_captcha_api_key)
-        self.output_dir = Path(output_dir)
-        self.output_dir.mkdir(exist_ok=True)
 
-        logger.info(f"Initialized COLA document fetcher (output: {self.output_dir})")
+        logger.info(f"Initialized COLA document fetcher")
 
     def _get_headers(self) -> dict:
         """Get HTTP headers for requests."""
