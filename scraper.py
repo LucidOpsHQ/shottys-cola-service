@@ -51,17 +51,15 @@ def get_http_client() -> Generator[httpx.Client, None, None]:
 class TTBScraper:
     """Scraper for TTB COLAs Online database."""
 
-    def __init__(self, product_name: str = "Shottys", vendor_code: str = "23153", delay_between_requests: float = 1.0):
+    def __init__(self, product_name: str = "Shottys", delay_between_requests: float = 1.0):
         """
         Initialize the scraper.
 
         Args:
             product_name: Product or fanciful name to search for
-            vendor_code: Vendor code
             delay_between_requests: Delay in seconds between requests (be respectful)
         """
         self.product_name = product_name
-        self.vendor_code = vendor_code
         self.delay_between_requests = delay_between_requests
 
         self.base_url = "https://ttbonline.gov/colasonline/publicSearchColasAdvancedProcess.do"
@@ -75,7 +73,6 @@ class TTBScraper:
 
         logger.info(f"Initialized scraper for product: {product_name}")
         logger.debug(f"Date range: {self.date_from} to {self.date_to}")
-        logger.debug(f"Vendor code: {vendor_code}")
 
     def _get_headers(self) -> dict:
         """Get HTTP headers for requests."""
@@ -112,7 +109,7 @@ class TTBScraper:
             'searchCriteria.serialNumFrom': '',
             'searchCriteria.serialNumTo': '',
             'searchCriteria.permitId': '',
-            'searchCriteria.vendorCode': self.vendor_code,
+            'searchCriteria.vendorCode': '',
             'action': 'search'
         }
 
