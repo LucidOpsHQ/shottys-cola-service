@@ -25,10 +25,11 @@ class TTBItem(BaseModel):
         }
     )
 
+    # Fields from list page
     ttb_id: str = Field(..., description="TTB ID number")
     permit_no: Optional[str] = Field(None, description="Permit number")
     serial_number: Optional[str] = Field(None, description="Serial number")
-    completed_date: Optional[str] = Field(None, description="Completion date")
+    completed_date: Optional[str] = Field(None, description="Completion date (from list)")
     fanciful_name: Optional[str] = Field(None, description="Fanciful name")
     brand_name: Optional[str] = Field(None, description="Brand name")
     origin_code: Optional[str] = Field(None, description="Origin code")
@@ -36,3 +37,28 @@ class TTBItem(BaseModel):
     class_type: Optional[str] = Field(None, description="Class/Type code")
     class_type_desc: Optional[str] = Field(None, description="Class/Type description")
     url: str = Field(..., description="URL to the item details page")
+
+    # Additional fields from detail page
+    status: Optional[str] = Field(None, description="COLA status (APPROVED, etc.)")
+    vendor_code: Optional[str] = Field(None, description="Vendor code")
+    type_of_application: Optional[str] = Field(None, description="Type of application (LABEL APPROVAL, etc.)")
+    for_sale_in: Optional[str] = Field(None, description="State restriction (if any)")
+    total_bottle_capacity: Optional[str] = Field(None, description="Total bottle capacity")
+    grape_varietals: Optional[str] = Field(None, description="Grape varietal(s)")
+    wine_vintage: Optional[str] = Field(None, description="Wine vintage year")
+    formula: Optional[str] = Field(None, description="Formula number")
+    lab_no: Optional[str] = Field(None, description="Lab number")
+    approval_date: Optional[str] = Field(None, description="Approval date")
+    qualifications: Optional[str] = Field(None, description="Qualifications text")
+
+    # Applicant information
+    applicant_name: Optional[str] = Field(None, description="Applicant company name")
+    applicant_address: Optional[str] = Field(None, description="Applicant address")
+    applicant_city: Optional[str] = Field(None, description="Applicant city")
+    applicant_state: Optional[str] = Field(None, description="Applicant state")
+    applicant_zip: Optional[str] = Field(None, description="Applicant ZIP code")
+
+    # Contact information
+    contact_name: Optional[str] = Field(None, description="Contact person name")
+    contact_phone: Optional[str] = Field(None, description="Contact phone number")
+    contact_email: Optional[str] = Field(None, description="Contact email")

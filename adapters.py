@@ -138,9 +138,20 @@ class AirtableAdapter(StorageAdapter):
                 date_obj = datetime.strptime(item.completed_date, "%m/%d/%Y")
                 completed_date_iso = date_obj.strftime("%Y-%m-%d")
             except (ValueError, TypeError):
-                logger.warning(f"Could not parse date: {item.completed_date}")
+                logger.warning(f"Could not parse completed date: {item.completed_date}")
+
+        # Convert approval date to ISO format (YYYY-MM-DD) for Airtable Date field
+        approval_date_iso = None
+        if item.approval_date:
+            try:
+                # Parse MM/DD/YYYY format
+                date_obj = datetime.strptime(item.approval_date, "%m/%d/%Y")
+                approval_date_iso = date_obj.strftime("%Y-%m-%d")
+            except (ValueError, TypeError):
+                logger.warning(f"Could not parse approval date: {item.approval_date}")
 
         record = {
+            # Basic fields from list page
             "TTB ID": ttb_id_number,
             "Permit No": item.permit_no,
             "Serial Number": item.serial_number,
@@ -152,7 +163,32 @@ class AirtableAdapter(StorageAdapter):
             "Class/Type": item.class_type,
             "Class/Type Desc": item.class_type_desc,
             "URL": item.url,
-            "Deprecated": False  # Mark as not deprecated when syncing
+            "Deprecated": False,  # Mark as not deprecated when syncing
+
+            # Detail page fields
+            "Status": item.status,
+            "Vendor Code": item.vendor_code,
+            "Type of Application": item.type_of_application,
+            "For Sale In": item.for_sale_in,
+            "Total Bottle Capacity": item.total_bottle_capacity,
+            "Grape Varietals": item.grape_varietals,
+            "Wine Vintage": item.wine_vintage,
+            "Formula": item.formula,
+            "Lab No": item.lab_no,
+            "Approval Date": approval_date_iso,  # Date field (YYYY-MM-DD)
+            "Qualifications": item.qualifications,
+
+            # Applicant information
+            "Applicant Name": item.applicant_name,
+            "Applicant Address": item.applicant_address,
+            "Applicant City": item.applicant_city,
+            "Applicant State": item.applicant_state,
+            "Applicant ZIP": item.applicant_zip,
+
+            # Contact information
+            "Contact Name": item.contact_name,
+            "Contact Phone": item.contact_phone,
+            "Contact Email": item.contact_email,
         }
         return record
 
