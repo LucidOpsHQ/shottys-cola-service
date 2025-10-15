@@ -3,7 +3,7 @@ TTB COLA scraper - handles web scraping logic only.
 """
 import httpx
 from bs4 import BeautifulSoup
-from typing import List, Generator
+from typing import List, Generator, Optional
 from contextlib import contextmanager
 import time
 import re
