@@ -108,7 +108,6 @@ async def run_sync() -> Dict[str, Any]:
         logger.info("Initializing TTB scraper...")
         scraper = TTBScraper(
             product_name=os.getenv("TTB_PRODUCT_NAME", "Shottys"),
-            vendor_code=os.getenv("TTB_VENDOR_CODE", "23153"),
             delay_between_requests=float(os.getenv("TTB_DELAY", "1.0"))
         )
 

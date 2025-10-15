@@ -102,7 +102,6 @@ AIRTABLE_TABLE_NAME=TTB COLAs
 
 # TTB Scraper Configuration
 TTB_PRODUCT_NAME=Shottys
-TTB_VENDOR_CODE=23153
 TTB_DELAY=1.0
 
 # Sync Strategy
@@ -265,7 +264,6 @@ This service is configured for deployment on Vercel with automatic cron job sche
    AIRTABLE_BASE_ID=your_base_id
    AIRTABLE_TABLE_NAME=TTB COLAs
    TTB_PRODUCT_NAME=Shottys
-   TTB_VENDOR_CODE=23153
    TTB_DELAY=1.0
    SYNC_STRATEGY=incremental
    ```
