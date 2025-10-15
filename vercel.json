@@ -25,7 +25,6 @@
     "AIRTABLE_TABLE_NAME": "TTB Reference (New)",
     "TTB_PRODUCT_NAME": "Shottys",
     "TTB_DELAY": "1.0",
-    "SYNC_STRATEGY": "incremental",
     "SENTRY_ENVIRONMENT": "production"
   }
 }
