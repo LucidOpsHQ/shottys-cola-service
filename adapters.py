@@ -2,8 +2,11 @@
 Adapters for syncing TTB data to external services.
 """
 import os
+import io
+import time
 from abc import ABC, abstractmethod
-from typing import List, Dict, Set
+from typing import List, Dict, Set, Optional
+from pathlib import Path
 from pyairtable import Api
 from loguru import logger
 
@@ -61,7 +64,14 @@ class StorageAdapter(ABC):
 class AirtableAdapter(StorageAdapter):
     """Adapter for syncing data to Airtable."""
 
-    def __init__(self, api_key: str = None, base_id: str = None, table_name: str = "TTB COLAs"):
+    def __init__(
+        self,
+        api_key: str = None,
+        base_id: str = None,
+        table_name: str = "TTB COLAs",
+        fetch_documents: bool = False,
+        two_captcha_api_key: str = None
+    ):
         """
         Initialize Airtable adapter.
 
@@ -69,10 +79,15 @@ class AirtableAdapter(StorageAdapter):
             api_key: Airtable API key (or set AIRTABLE_API_KEY env var)
             base_id: Airtable Base ID (or set AIRTABLE_BASE_ID env var)
             table_name: Name of the table to sync to
+            fetch_documents: Whether to automatically fetch and upload PDFs
+            two_captcha_api_key: 2Captcha API key (required if fetch_documents=True)
         """
         self.api_key = api_key or os.getenv("AIRTABLE_API_KEY")
         self.base_id = base_id or os.getenv("AIRTABLE_BASE_ID")
         self.table_name = table_name
+
+        self.fetch_documents = fetch_documents
+        self.two_captcha_api_key = two_captcha_api_key or os.getenv("TWO_CAPTCHA_API_KEY")
 
         if not self.api_key:
             raise ValueError("Airtable API key not provided. Set AIRTABLE_API_KEY environment variable or pass api_key parameter.")
@@ -80,10 +95,22 @@ class AirtableAdapter(StorageAdapter):
         if not self.base_id:
             raise ValueError("Airtable Base ID not provided. Set AIRTABLE_BASE_ID environment variable or pass base_id parameter.")
 
+        if self.fetch_documents and not self.two_captcha_api_key:
+            raise ValueError("TWO_CAPTCHA_API_KEY required when fetch_documents=True")
+
         self.api = Api(self.api_key)
         self.table = self.api.table(self.base_id, self.table_name)
 
-        logger.info(f"Initialized Airtable adapter for base {self.base_id}, table '{self.table_name}'")
+        # Initialize document fetcher if enabled
+        self.document_fetcher = None
+        if self.fetch_documents:
+            from cola_document_fetcher import ColaDocumentFetcher
+            self.document_fetcher = ColaDocumentFetcher(self.two_captcha_api_key)
+
+        logger.info(
+            f"Initialized Airtable adapter for base {self.base_id}, "
+            f"table '{self.table_name}' (fetch_documents={self.fetch_documents})"
+        )
 
     def _item_to_record(self, item: TTBItem) -> Dict:
         """
@@ -213,9 +240,78 @@ class AirtableAdapter(StorageAdapter):
             logger.exception(f"Failed to mark records as deprecated: {e}")
             raise
 
+    def _upload_pdf_to_record(self, ttb_id: str, record_id: str, pdf_bytes: bytes) -> bool:
+        """
+        Upload PDF bytes to Airtable record attachment field.
+
+        Args:
+            ttb_id: TTB ID (for logging and filename)
+            record_id: Airtable record ID
+            pdf_bytes: PDF content as bytes
+
+        Returns:
+            True if successful
+        """
+        try:
+            # Upload attachment using pyairtable's upload method
+            filename = f"COLA_{ttb_id}.pdf"
+
+            # Create attachment using pyairtable Api's upload method
+            attachment = self.table.upload_attachment(
+                record_id,
+                "COLA",  # Field name
+                filename,
+                pdf_bytes
+            )
+
+            logger.success(f"Uploaded PDF to record {record_id} for TTB ID {ttb_id}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to upload PDF for {ttb_id}: {e}")
+            return False
+
+    def _fetch_and_upload_document(self, ttb_id: str, record_id: str) -> bool:
+        """
+        Fetch document and upload PDF to Airtable record.
+
+        Args:
+            ttb_id: TTB ID to fetch document for
+            record_id: Airtable record ID to update
+
+        Returns:
+            True if successful
+        """
+        if not self.document_fetcher:
+            logger.warning("Document fetcher not initialized")
+            return False
+
+        try:
+            logger.info(f"Fetching and uploading document for TTB ID: {ttb_id}")
+
+            # Fetch and generate PDF bytes
+            pdf_bytes = self.document_fetcher.fetch_and_generate_pdf_bytes(ttb_id)
+
+            if not pdf_bytes:
+                logger.error(f"Failed to fetch document for {ttb_id}")
+                return False
+
+            # Upload PDF to Airtable
+            success = self._upload_pdf_to_record(ttb_id, record_id, pdf_bytes)
+
+            if success:
+                logger.success(f"Successfully uploaded PDF for {ttb_id}")
+
+            return success
+
+        except Exception as e:
+            logger.error(f"Error fetching and uploading document for {ttb_id}: {e}")
+            return False
+
     def create_items(self, items: List[TTBItem]) -> int:
         """
         Create new items in Airtable using batch operations.
+        If fetch_documents is enabled, also fetches and uploads PDFs for each item.
 
         Args:
             items: List of TTBItem models to create
@@ -238,9 +334,17 @@ class AirtableAdapter(StorageAdapter):
                 batch = items[i:i + batch_size]
                 records_data = [self._item_to_record(item) for item in batch]
 
-                self.table.batch_create(records_data)
+                created_records = self.table.batch_create(records_data)
                 created_count += len(batch)
                 logger.debug(f"Created batch {i // batch_size + 1}: {len(batch)} records")
+
+                # Fetch and upload documents if enabled
+                if self.fetch_documents and self.document_fetcher:
+                    for idx, item in enumerate(batch):
+                        record_id = created_records[idx]['id']
+                        self._fetch_and_upload_document(item.ttb_id, record_id)
+                        # Small delay to avoid rate limiting
+                        time.sleep(0.5)
 
             logger.success(f"Successfully created {created_count} records in Airtable")
             return created_count
@@ -252,6 +356,7 @@ class AirtableAdapter(StorageAdapter):
     def update_item(self, item: TTBItem) -> bool:
         """
         Update an existing item in Airtable.
+        If fetch_documents is enabled, also fetches and uploads PDF for the item.
 
         Args:
             item: TTBItem model to update
@@ -273,6 +378,12 @@ class AirtableAdapter(StorageAdapter):
 
             self.table.update(record_id, record_data)
             logger.debug(f"Updated record: {item.ttb_id}")
+
+            # Fetch and upload document if enabled
+            if self.fetch_documents and self.document_fetcher:
+                self._fetch_and_upload_document(item.ttb_id, record_id)
+                time.sleep(0.5)  # Small delay to avoid rate limiting
+
             return True
 
         except Exception as e:

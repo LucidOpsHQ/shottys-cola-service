@@ -64,10 +64,26 @@ def main():
             logger.info("=" * 80)
             return
 
+        # Check document fetching configuration
+        fetch_documents = os.getenv("FETCH_DOCUMENTS", "false").lower() == "true"
+        two_captcha_api_key = os.getenv("TWO_CAPTCHA_API_KEY")
+
+        if fetch_documents:
+            logger.info("Document fetching is ENABLED")
+            if not two_captcha_api_key:
+                logger.error("FETCH_DOCUMENTS=true but TWO_CAPTCHA_API_KEY is not set!")
+                logger.error("Please set TWO_CAPTCHA_API_KEY in your .env file")
+                return
+            logger.info("2Captcha API key found - will fetch and upload PDFs")
+        else:
+            logger.info("Document fetching is DISABLED (set FETCH_DOCUMENTS=true to enable)")
+
         # Initialize storage adapter
         logger.info("Initializing Airtable adapter...")
         airtable = AirtableAdapter(
-            table_name=os.getenv("AIRTABLE_TABLE_NAME", "TTB COLAs")
+            table_name=os.getenv("AIRTABLE_TABLE_NAME", "TTB COLAs"),
+            fetch_documents=fetch_documents,
+            two_captcha_api_key=two_captcha_api_key
         )
 
         # Determine sync strategy from environment variable
