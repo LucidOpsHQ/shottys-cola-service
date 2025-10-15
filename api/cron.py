@@ -1,6 +1,7 @@
 """
 FastAPI serverless function for scheduled TTB COLA scraping and sync.
 """
+import json
 import os
 import sys
 import time
@@ -107,7 +108,7 @@ async def run_sync() -> Dict[str, Any]:
         # Initialize scraper
         logger.info("Initializing TTB scraper...")
         scraper = TTBScraper(
-            product_name=os.getenv("TTB_PRODUCT_NAME", "Shottys"),
+            product_names=json.loads(os.getenv("TTB_PRODUCT_NAMES", '["Shottys"]')),
             delay_between_requests=float(os.getenv("TTB_DELAY", "1.0"))
         )
 

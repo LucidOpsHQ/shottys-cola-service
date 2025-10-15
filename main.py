@@ -38,7 +38,7 @@ def main():
         # Initialize scraper (data source)
         logger.info("Initializing TTB scraper...")
         scraper = TTBScraper(
-            product_name=os.getenv("TTB_PRODUCT_NAME", "Shottys"),
+            product_names=json.loads(os.getenv("TTB_PRODUCT_NAMES", '["Shottys"]')),
             delay_between_requests=float(os.getenv("TTB_DELAY", "1.0"))
         )
 

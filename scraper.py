@@ -51,15 +51,17 @@ def get_http_client() -> Generator[httpx.Client, None, None]:
 class TTBScraper:
     """Scraper for TTB COLAs Online database."""
 
-    def __init__(self, product_name: str = "Shottys", delay_between_requests: float = 1.0):
+    def __init__(self, product_names: List[str] = None, delay_between_requests: float = 1.0):
         """
         Initialize the scraper.
 
         Args:
-            product_name: Product or fanciful name to search for
+            product_names: List of product or fanciful names to search for. Defaults to ["Shottys"]
             delay_between_requests: Delay in seconds between requests (be respectful)
         """
-        self.product_name = product_name
+        if product_names is None:
+            product_names = ["Shottys"]
+        self.product_names = product_names if isinstance(product_names, list) else [product_names]
         self.delay_between_requests = delay_between_requests
 
         self.base_url = "https://ttbonline.gov/colasonline/publicSearchColasAdvancedProcess.do"
@@ -71,7 +73,7 @@ class TTBScraper:
         self.date_to = date_to_dt.strftime("%m/%d/%Y")
         self.date_from = date_from_dt.strftime("%m/%d/%Y")
 
-        logger.info(f"Initialized scraper for product: {product_name}")
+        logger.info(f"Initialized scraper for products: {', '.join(self.product_names)}")
         logger.debug(f"Date range: {self.date_from} to {self.date_to}")
 
     def _get_headers(self) -> dict:
@@ -95,12 +97,16 @@ class TTBScraper:
             'sec-ch-ua-platform': '"Windows"'
         }
 
-    def _get_search_data(self) -> dict:
-        """Get POST data for initial search."""
+    def _get_search_data(self, product_name: str) -> dict:
+        """Get POST data for initial search.
+
+        Args:
+            product_name: The product name to search for
+        """
         return {
             'searchCriteria.dateCompletedFrom': self.date_from,
             'searchCriteria.dateCompletedTo': self.date_to,
-            'searchCriteria.productOrFancifulName': self.product_name,
+            'searchCriteria.productOrFancifulName': product_name,
             'searchCriteria.productNameSearchType': 'B',
             'searchCriteria.classTypeDesired': 'desc',
             'searchCriteria.classTypeCode': '',
@@ -396,27 +402,31 @@ class TTBScraper:
 
         return False
 
-    def scrape(self) -> List[TTBItem]:
+    def _scrape_single_product(self, product_name: str, all_results: List[TTBItem]) -> List[TTBItem]:
         """
-        Scrape TTB IDs from the TTB COLAs online database with pagination.
+        Scrape TTB IDs for a single product name with pagination.
+
+        Args:
+            product_name: Product name to search for
+            all_results: List of existing results to check for duplicates across all products
 
         Returns:
-            List of TTBItem models containing scraped TTB data
+            List of TTBItem models for this product
         """
-        all_results = []
+        product_results = []
         page = 1
 
-        logger.info(f"Starting scrape for product: {self.product_name}")
+        logger.info(f"Starting scrape for product: {product_name}")
 
         with get_http_client() as client:
             # Set headers for this scrape session
             client.headers.update(self._get_headers())
             while True:
-                logger.info(f"Fetching page {page}...")
+                logger.info(f"Fetching page {page} for {product_name}...")
 
                 # Make the POST request for first page, GET for subsequent pages
                 if page == 1:
-                    response = client.post(self.base_url, data=self._get_search_data())
+                    response = client.post(self.base_url, data=self._get_search_data(product_name))
                     logger.debug(f"POST request to {self.base_url}")
                     logger.debug(f"Response cookies: {dict(response.cookies)}")
                 else:
@@ -446,7 +456,8 @@ class TTBScraper:
                 duplicates = 0
                 new_items = []
                 for item in page_results:
-                    if any(existing.ttb_id == item.ttb_id for existing in all_results):
+                    # Check against both product_results and all_results to avoid duplicates
+                    if any(existing.ttb_id == item.ttb_id for existing in product_results + all_results):
                         duplicates += 1
                         logger.debug(f"Duplicate TTB ID found: {item.ttb_id}")
                     else:
@@ -455,7 +466,7 @@ class TTBScraper:
                 # Enrich new items with detail page data
                 for item in new_items:
                     enriched_item = self._enrich_item_with_details(item)
-                    all_results.append(enriched_item)
+                    product_results.append(enriched_item)
                     # Small delay between detail page fetches
                     time.sleep(self.delay_between_requests)
 
@@ -475,5 +486,34 @@ class TTBScraper:
                 logger.debug(f"Waiting {self.delay_between_requests}s before next request")
                 time.sleep(self.delay_between_requests)
 
-        logger.success(f"Scraping completed! Total results: {len(all_results)}")
+        logger.success(f"Scraping completed for {product_name}! Results: {len(product_results)}")
+        return product_results
+
+    def scrape(self) -> List[TTBItem]:
+        """
+        Scrape TTB IDs from the TTB COLAs online database for all product names.
+
+        Iterates over each product name and collects all results into a single list.
+
+        Returns:
+            List of TTBItem models containing scraped TTB data for all products
+        """
+        all_results = []
+
+        logger.info(f"Starting scrape for {len(self.product_names)} product(s): {', '.join(self.product_names)}")
+
+        for idx, product_name in enumerate(self.product_names, 1):
+            logger.info(f"Processing product {idx}/{len(self.product_names)}: {product_name}")
+
+            product_results = self._scrape_single_product(product_name, all_results)
+            all_results.extend(product_results)
+
+            logger.info(f"Completed {product_name}: {len(product_results)} results")
+
+            # Add delay between different product searches
+            if idx < len(self.product_names):
+                logger.debug(f"Waiting {self.delay_between_requests}s before next product search")
+                time.sleep(self.delay_between_requests)
+
+        logger.success(f"All scraping completed! Total results: {len(all_results)} across {len(self.product_names)} product(s)")
         return all_results

@@ -238,7 +238,7 @@ To test the enhanced scraper with a single record:
 ```python
 from scraper import TTBScraper
 
-scraper = TTBScraper(product_name="Shottys")
+scraper = TTBScraper(product_names=["Shottys"])
 
 # Create a basic item
 from models import TTBItem

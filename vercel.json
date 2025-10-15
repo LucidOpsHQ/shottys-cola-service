@@ -23,7 +23,7 @@
   ],
   "env": {
     "AIRTABLE_TABLE_NAME": "TTB Reference (New)",
-    "TTB_PRODUCT_NAME": "Shottys",
+    "TTB_PRODUCT_NAMES": "[\"Shottys\", \"Shotty's\"]",
     "TTB_DELAY": "1.0",
     "SENTRY_ENVIRONMENT": "production"
   }

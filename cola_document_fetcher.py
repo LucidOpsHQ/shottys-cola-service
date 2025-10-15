@@ -371,8 +371,17 @@ class ColaDocumentFetcher:
                 await browser.close()
                 return pdf_bytes
 
-        # Run the async function
-        pdf_bytes = asyncio.run(run_conversion())
+        # Check if there's already a running event loop
+        try:
+            loop = asyncio.get_running_loop()
+            # If we're here, there's already a loop running
+            # We need to use a different approach - run in a thread
+            import nest_asyncio
+            nest_asyncio.apply()
+            pdf_bytes = asyncio.run(run_conversion())
+        except RuntimeError:
+            # No running loop, safe to use asyncio.run()
+            pdf_bytes = asyncio.run(run_conversion())
 
         return pdf_bytes
 
