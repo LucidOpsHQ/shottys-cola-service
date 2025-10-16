@@ -8,4 +8,4 @@ fastapi>=0.115.0
 sentry-sdk[fastapi]>=2.0.0
 mangum>=0.18.0
 uvicorn>=0.30.0
-weasyprint>=62.0
+xhtml2pdf>=0.2.16

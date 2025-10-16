@@ -5,7 +5,7 @@ This module handles:
 1. Detecting if a captcha is present
 2. Solving captcha using 2Captcha service
 3. Fetching the document page
-4. Converting the HTML page to PDF using weasyprint
+4. Converting the HTML page to PDF using xhtml2pdf
 """
 import os
 import httpx
@@ -15,7 +15,8 @@ from bs4 import BeautifulSoup
 from pathlib import Path
 from typing import Optional, Tuple
 from loguru import logger
-from weasyprint import HTML, CSS
+from xhtml2pdf import pisa
+from io import BytesIO
 
 # Import the global httpx client context manager
 from scraper import get_http_client
@@ -308,7 +309,7 @@ class ColaDocumentFetcher:
 
     def convert_html_to_pdf_bytes(self, html: str, ttb_id: str) -> Optional[bytes]:
         """
-        Convert HTML document to PDF bytes using weasyprint.
+        Convert HTML document to PDF bytes using xhtml2pdf.
 
         Args:
             html: HTML content
@@ -320,19 +321,24 @@ class ColaDocumentFetcher:
         logger.info(f"Converting HTML to PDF bytes for {ttb_id}")
 
         try:
-            # Create HTML object from string
-            html_doc = HTML(string=html)
+            # Create a BytesIO buffer to store the PDF
+            pdf_buffer = BytesIO()
 
-            # Generate PDF with custom CSS for margins
-            css = CSS(string='''
-                @page {
-                    size: letter;
-                    margin: 0.5in;
-                }
-            ''')
+            # Convert HTML to PDF
+            pisa_status = pisa.CreatePDF(
+                src=html,
+                dest=pdf_buffer,
+                encoding='utf-8'
+            )
 
-            # Render to PDF bytes
-            pdf_bytes = html_doc.write_pdf(stylesheets=[css])
+            # Check if conversion was successful
+            if pisa_status.err:
+                logger.error(f"Error during PDF conversion: {pisa_status.err} errors")
+                return None
+
+            # Get the PDF bytes
+            pdf_bytes = pdf_buffer.getvalue()
+            pdf_buffer.close()
 
             logger.success(f"PDF generated: {len(pdf_bytes)} bytes")
             return pdf_bytes
