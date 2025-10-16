@@ -1,11 +1,10 @@
 """
-COLA Document Fetcher - handles fetching PDF documents from TTB COLA detail pages.
+COLA Document Fetcher - handles fetching HTML documents from TTB COLA detail pages.
 
 This module handles:
 1. Detecting if a captcha is present
 2. Solving captcha using 2Captcha service
-3. Fetching the document page
-4. Converting the HTML page to PDF using xhtml2pdf
+3. Fetching the document page HTML
 """
 import os
 import httpx
@@ -15,8 +14,6 @@ from bs4 import BeautifulSoup
 from pathlib import Path
 from typing import Optional, Tuple
 from loguru import logger
-from xhtml2pdf import pisa
-from io import BytesIO
 
 # Import the global httpx client context manager
 from scraper import get_http_client
@@ -119,7 +116,7 @@ class TwoCaptchaSolver:
 
 
 class ColaDocumentFetcher:
-    """Fetches COLA documents from TTB, handling captcha and generating PDFs."""
+    """Fetches COLA documents from TTB, handling captcha and generating HTMLs."""
 
     def __init__(self, two_captcha_api_key: str):
         """
@@ -127,7 +124,7 @@ class ColaDocumentFetcher:
 
         Args:
             two_captcha_api_key: 2Captcha API key
-            output_dir: Directory to save PDFs
+            output_dir: Directory to save HTMLs
         """
         self.captcha_solver = TwoCaptchaSolver(two_captcha_api_key)
 
@@ -307,72 +304,25 @@ class ColaDocumentFetcher:
             logger.error(f"Failed to fetch document for {ttb_id} after {max_retries} attempts")
             return None
 
-    def convert_html_to_pdf_bytes(self, html: str, ttb_id: str) -> Optional[bytes]:
+    def fetch_document_html(self, ttb_id: str) -> Optional[str]:
         """
-        Convert HTML document to PDF bytes using xhtml2pdf.
+        Complete workflow: fetch document page HTML.
 
         Args:
-            html: HTML content
-            ttb_id: TTB ID (for logging)
+            ttb_id: TTB ID to fetch
 
         Returns:
-            PDF content as bytes or None if failed
-        """
-        logger.info(f"Converting HTML to PDF bytes for {ttb_id}")
-
-        try:
-            # Create a BytesIO buffer to store the PDF
-            pdf_buffer = BytesIO()
-
-            # Convert HTML to PDF
-            pisa_status = pisa.CreatePDF(
-                src=html,
-                dest=pdf_buffer,
-                encoding='utf-8'
-            )
-
-            # Check if conversion was successful
-            if pisa_status.err:
-                logger.error(f"Error during PDF conversion: {pisa_status.err} errors")
-                return None
-
-            # Get the PDF bytes
-            pdf_bytes = pdf_buffer.getvalue()
-            pdf_buffer.close()
-
-            logger.success(f"PDF generated: {len(pdf_bytes)} bytes")
-            return pdf_bytes
-
-        except Exception as e:
-            logger.error(f"Error converting HTML to PDF: {e}")
-            return None
-
-    def fetch_and_generate_pdf_bytes(self, ttb_id: str) -> Optional[bytes]:
-        """
-        Complete workflow: fetch document page and generate PDF as bytes.
-
-        Args:
-            ttb_id: TTB ID to fetch and convert
-
-        Returns:
-            PDF content as bytes or None if failed
+            HTML content as string or None if failed
         """
         # Fetch the document page HTML
         html = self.fetch_document_page(ttb_id)
 
-        if not html:
-            logger.error(f"Failed to fetch document page for {ttb_id}")
-            return None
-
-        # Convert to PDF bytes
-        pdf_bytes = self.convert_html_to_pdf_bytes(html, ttb_id)
-
-        if pdf_bytes:
-            logger.success(f"Successfully generated PDF for {ttb_id}: {len(pdf_bytes)} bytes")
+        if html:
+            logger.success(f"Successfully fetched HTML for {ttb_id}: {len(html)} characters")
         else:
-            logger.error(f"Failed to generate PDF for {ttb_id}")
+            logger.error(f"Failed to fetch document page for {ttb_id}")
 
-        return pdf_bytes
+        return html
 
 
 # Example usage
@@ -391,13 +341,13 @@ if __name__ == "__main__":
 
     # Test with the example TTB ID from example-cola-doc.html
     ttb_id = "23079001000657"
-    pdf_bytes = fetcher.fetch_and_generate_pdf_bytes(ttb_id)
+    html = fetcher.fetch_document_html(ttb_id)
 
-    if pdf_bytes:
-        logger.success(f"PDF generated successfully: {len(pdf_bytes)} bytes")
+    if html:
+        logger.success(f"HTML fetched successfully: {len(html)} characters")
         # Optionally save for testing
-        test_output = Path("./test_output.pdf")
-        test_output.write_bytes(pdf_bytes)
-        logger.info(f"Saved test PDF to {test_output}")
+        test_output = Path("./test_output.html")
+        test_output.write_text(html, encoding='utf-8')
+        logger.info(f"Saved test HTML to {test_output}")
     else:
-        logger.error("Failed to generate PDF")
+        logger.error("Failed to fetch HTML")

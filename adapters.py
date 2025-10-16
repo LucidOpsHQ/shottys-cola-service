@@ -79,7 +79,7 @@ class AirtableAdapter(StorageAdapter):
             api_key: Airtable API key (or set AIRTABLE_API_KEY env var)
             base_id: Airtable Base ID (or set AIRTABLE_BASE_ID env var)
             table_name: Name of the table to sync to
-            fetch_documents: Whether to automatically fetch and upload PDFs
+            fetch_documents: Whether to automatically fetch and upload HTML documents
             two_captcha_api_key: 2Captcha API key (required if fetch_documents=True)
         """
         self.api_key = api_key or os.getenv("AIRTABLE_API_KEY")
@@ -276,40 +276,43 @@ class AirtableAdapter(StorageAdapter):
             logger.exception(f"Failed to mark records as deprecated: {e}")
             raise
 
-    def _upload_pdf_to_record(self, ttb_id: str, record_id: str, pdf_bytes: bytes) -> bool:
+    def _upload_html_to_record(self, ttb_id: str, record_id: str, html_content: str) -> bool:
         """
-        Upload PDF bytes to Airtable record attachment field.
+        Upload HTML content to Airtable record attachment field.
 
         Args:
             ttb_id: TTB ID (for logging and filename)
             record_id: Airtable record ID
-            pdf_bytes: PDF content as bytes
+            html_content: HTML content as string
 
         Returns:
             True if successful
         """
         try:
+            # Convert HTML string to bytes
+            html_bytes = html_content.encode('utf-8')
+
             # Upload attachment using pyairtable's upload method
-            filename = f"COLA_{ttb_id}.pdf"
+            filename = f"COLA_{ttb_id}.html"
 
             # Create attachment using pyairtable Api's upload method
             attachment = self.table.upload_attachment(
                 record_id,
                 "COLA",  # Field name
                 filename,
-                pdf_bytes
+                html_bytes
             )
 
-            logger.success(f"Uploaded PDF to record {record_id} for TTB ID {ttb_id}")
+            logger.success(f"Uploaded HTML to record {record_id} for TTB ID {ttb_id}")
             return True
 
         except Exception as e:
-            logger.error(f"Failed to upload PDF for {ttb_id}: {e}")
+            logger.error(f"Failed to upload HTML for {ttb_id}: {e}")
             return False
 
     def _fetch_and_upload_document(self, ttb_id: str, record_id: str) -> bool:
         """
-        Fetch document and upload PDF to Airtable record.
+        Fetch document and upload HTML to Airtable record.
 
         Args:
             ttb_id: TTB ID to fetch document for
@@ -325,18 +328,18 @@ class AirtableAdapter(StorageAdapter):
         try:
             logger.info(f"Fetching and uploading document for TTB ID: {ttb_id}")
 
-            # Fetch and generate PDF bytes
-            pdf_bytes = self.document_fetcher.fetch_and_generate_pdf_bytes(ttb_id)
+            # Fetch HTML content
+            html_content = self.document_fetcher.fetch_document_html(ttb_id)
 
-            if not pdf_bytes:
+            if not html_content:
                 logger.error(f"Failed to fetch document for {ttb_id}")
                 return False
 
-            # Upload PDF to Airtable
-            success = self._upload_pdf_to_record(ttb_id, record_id, pdf_bytes)
+            # Upload HTML to Airtable
+            success = self._upload_html_to_record(ttb_id, record_id, html_content)
 
             if success:
-                logger.success(f"Successfully uploaded PDF for {ttb_id}")
+                logger.success(f"Successfully uploaded HTML for {ttb_id}")
 
             return success
 
@@ -347,7 +350,7 @@ class AirtableAdapter(StorageAdapter):
     def create_items(self, items: List[TTBItem]) -> int:
         """
         Create new items in Airtable using batch operations.
-        If fetch_documents is enabled, also fetches and uploads PDFs for each item.
+        If fetch_documents is enabled, also fetches and uploads HTML documents for each item.
 
         Args:
             items: List of TTBItem models to create
@@ -392,7 +395,7 @@ class AirtableAdapter(StorageAdapter):
     def update_item(self, item: TTBItem) -> bool:
         """
         Update an existing item in Airtable.
-        If fetch_documents is enabled, also fetches and uploads PDF for the item.
+        If fetch_documents is enabled, also fetches and uploads HTML document for the item.
 
         Args:
             item: TTBItem model to update

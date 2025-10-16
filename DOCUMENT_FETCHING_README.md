@@ -1,28 +1,27 @@
-# COLA Document Fetching & PDF Upload
+# COLA Document Fetching & HTML Upload
 
-This document explains the new document fetching functionality that automatically downloads COLA documents from TTB and uploads them as PDFs to Airtable.
+This document explains the new document fetching functionality that automatically downloads COLA documents from TTB and uploads them as HTML files to Airtable.
 
 ## Overview
 
-The system now supports automatic fetching and uploading of COLA documents (TTB Form 5100.31) as PDF files directly to your Airtable records. When enabled, the system will:
+The system now supports automatic fetching and uploading of COLA documents (TTB Form 5100.31) as HTML files directly to your Airtable records. When enabled, the system will:
 
 1. **Fetch the COLA document page** from TTB for each record
 2. **Handle captchas automatically** using 2Captcha service
-3. **Convert HTML to PDF** using Playwright (headless browser)
-4. **Upload PDF directly to Airtable** attachment field named "COLA"
+3. **Upload HTML directly to Airtable** attachment field named "COLA"
 
 ## Architecture
 
 ### Key Components
 
-- **`cola_document_fetcher.py`**: Handles document fetching, captcha solving, and PDF generation
+- **`cola_document_fetcher.py`**: Handles document fetching and captcha solving
   - `TwoCaptchaSolver`: Integrates with 2Captcha API for automatic captcha solving
   - `ColaDocumentFetcher`: Main class that orchestrates the workflow
   - Uses the global httpx client from `scraper.py` for session management
 
-- **`adapters.py`**: Extended with PDF upload functionality
-  - `_fetch_and_upload_document()`: Fetches and uploads PDFs for individual records
-  - `_upload_pdf_to_record()`: Uploads PDF bytes to Airtable attachment field
+- **`adapters.py`**: Extended with HTML upload functionality
+  - `_fetch_and_upload_document()`: Fetches and uploads HTML documents for individual records
+  - `_upload_html_to_record()`: Uploads HTML content to Airtable attachment field
   - Integrated into `create_items()` and `update_item()` methods
 
 ### Workflow
@@ -42,11 +41,10 @@ The system now supports automatic fetching and uploading of COLA documents (TTB 
                   ▼
 ┌─────────────────────────────────────────────────────────────┐
 │ 3. For each record (if FETCH_DOCUMENTS=true):              │
-│    a. Fetch document page from TTB                          │
+│    a. Fetch document page HTML from TTB                     │
 │    b. Detect if captcha is present                          │
 │    c. If captcha: solve using 2Captcha → submit solution    │
-│    d. Convert HTML to PDF using Playwright                  │
-│    e. Upload PDF bytes to Airtable "COLA" field            │
+│    d. Upload HTML content to Airtable "COLA" field         │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -56,7 +54,6 @@ The system now supports automatic fetching and uploading of COLA documents (TTB 
 
 ```bash
 pip install -r requirements.txt
-playwright install chromium  # Install browser for PDF generation
 ```
 
 ### 2. Get 2Captcha API Key
@@ -79,7 +76,7 @@ TWO_CAPTCHA_API_KEY=your_api_key_here
 
 ### 4. Ensure Airtable Field Exists
 
-Make sure your Airtable table has an **Attachment** field named **"COLA"**. This is where the PDF documents will be uploaded.
+Make sure your Airtable table has an **Attachment** field named **"COLA"**. This is where the HTML documents will be uploaded.
 
 ## Usage
 
@@ -104,7 +101,7 @@ python main.py
 python cola_document_fetcher.py
 ```
 
-This will fetch the example document (TTB ID: 23079001000657) and save it as `test_output.pdf`.
+This will fetch the example document (TTB ID: 23079001000657) and save it as `test_output.html`.
 
 ## Configuration Options
 
@@ -122,7 +119,7 @@ This will fetch the example document (TTB ID: 23079001000657) and save it as `te
 
 #### Scenario 1: No Captcha (Direct Access)
 ```
-Request → Document Page (200 OK) → Convert to PDF → Upload to Airtable
+Request → Document Page (200 OK) → Upload HTML to Airtable
 ```
 
 #### Scenario 2: Captcha Present
@@ -133,8 +130,7 @@ Request → Captcha Page
   → Wait for solution (30-60 seconds)
   → Submit solution
   → Get Document Page
-  → Convert to PDF
-  → Upload to Airtable
+  → Upload HTML to Airtable
 ```
 
 ### Captcha Detection
@@ -148,14 +144,14 @@ The system detects captchas by looking for:
 
 Once solved, the system submits the captcha solution back to TTB and retrieves the actual document page.
 
-## PDF Generation
+## HTML Storage
 
-PDFs are generated using **Playwright** (headless Chromium browser) with the following settings:
+HTML documents are uploaded directly without conversion:
 
-- Format: Letter (8.5" x 11")
-- Margins: 0.5" on all sides
-- Print background: Yes (includes background colors/images)
-- Output: Direct to bytes (no filesystem storage)
+- No conversion needed - original HTML is preserved
+- No external dependencies required
+- Works on all deployment platforms (including Vercel serverless)
+- Output: Direct to Airtable as bytes (no filesystem storage)
 
 ## Cost Considerations
 
@@ -182,13 +178,10 @@ The system includes automatic delays:
 - Try increasing retry count
 - Check network connectivity
 
-### "Failed to upload PDF"
+### "Failed to upload HTML"
 - Verify Airtable "COLA" field exists and is type "Attachment"
 - Check Airtable API key permissions
 - Ensure sufficient Airtable storage space
-
-### "Playwright browser not found"
-Run: `playwright install chromium`
 
 ## Technical Details
 
@@ -197,10 +190,10 @@ Run: `playwright install chromium`
 - Maintains cookies across requests
 - Shares session with TTB scraper
 
-### PDF Storage
-- **No local filesystem storage** - PDFs are generated in memory
-- PDFs are uploaded directly to Airtable as bytes
-- Filename format: `COLA_{ttb_id}.pdf`
+### HTML Storage
+- **No local filesystem storage** - HTML is kept in memory
+- HTML is converted to UTF-8 bytes and uploaded directly to Airtable
+- Filename format: `COLA_{ttb_id}.html`
 
 ### Error Handling
 - Graceful degradation: If document fetch fails, the record is still created
@@ -221,11 +214,9 @@ Run: `playwright install chromium`
 2025-10-15 10:00:35 | INFO     | Submitting captcha solution: ABC123
 2025-10-15 10:00:36 | SUCCESS  | Captcha solved! Got document page for 23079001000657
 2025-10-15 10:00:36 | SUCCESS  | Successfully fetched document page for 23079001000657
-2025-10-15 10:00:36 | INFO     | Converting HTML to PDF bytes for 23079001000657
-2025-10-15 10:00:38 | SUCCESS  | PDF generated: 245678 bytes
-2025-10-15 10:00:38 | SUCCESS  | Successfully generated PDF for 23079001000657: 245678 bytes
-2025-10-15 10:00:39 | SUCCESS  | Uploaded PDF to record rec123456 for TTB ID 23079001000657
-2025-10-15 10:00:39 | SUCCESS  | Successfully uploaded PDF for 23079001000657
+2025-10-15 10:00:36 | SUCCESS  | Successfully fetched HTML for 23079001000657: 125678 characters
+2025-10-15 10:00:37 | SUCCESS  | Uploaded HTML to record rec123456 for TTB ID 23079001000657
+2025-10-15 10:00:37 | SUCCESS  | Successfully uploaded HTML for 23079001000657
 ```
 
 ## Security Notes
@@ -233,19 +224,18 @@ Run: `playwright install chromium`
 - 2Captcha API key should be kept secret
 - Never commit `.env` file to version control
 - Use `.env.example` as template only
-- PDFs are transmitted securely to Airtable via HTTPS
+- HTML documents are transmitted securely to Airtable via HTTPS
 
 ## Performance
 
 ### Timing Estimates (per record)
-- No captcha: ~3-5 seconds
-- With captcha: ~40-70 seconds (depends on 2Captcha queue)
-- PDF generation: ~2-3 seconds
-- Airtable upload: ~1-2 seconds
+- No captcha: ~1-2 seconds
+- With captcha: ~35-65 seconds (depends on 2Captcha queue)
+- Airtable upload: ~1 second
 
 ### Batch Processing
-- 10 records without captchas: ~5 minutes
-- 10 records with captchas: ~10-15 minutes
+- 10 records without captchas: ~2-3 minutes
+- 10 records with captchas: ~8-12 minutes
 
 ## Future Enhancements
 
@@ -253,5 +243,5 @@ Potential improvements:
 - Parallel document fetching
 - Caching of already-fetched documents
 - Alternative captcha services
-- PDF quality/size optimization
 - Automatic retry on captcha failure
+- Optional PDF conversion using external API services

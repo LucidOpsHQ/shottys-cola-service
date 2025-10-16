@@ -73,7 +73,7 @@ def main():
                 logger.error("FETCH_DOCUMENTS=true but TWO_CAPTCHA_API_KEY is not set!")
                 logger.error("Please set TWO_CAPTCHA_API_KEY in your .env file")
                 return
-            logger.info("2Captcha API key found - will fetch and upload PDFs")
+            logger.info("2Captcha API key found - will fetch and upload HTMLs")
         else:
             logger.info("Document fetching is DISABLED (set FETCH_DOCUMENTS=true to enable)")
 
