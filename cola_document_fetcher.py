@@ -5,19 +5,17 @@ This module handles:
 1. Detecting if a captcha is present
 2. Solving captcha using 2Captcha service
 3. Fetching the document page
-4. Converting the HTML page to PDF using playwright
+4. Converting the HTML page to PDF using weasyprint
 """
 import os
 import httpx
 import base64
 import time
-import asyncio
 from bs4 import BeautifulSoup
 from pathlib import Path
 from typing import Optional, Tuple
 from loguru import logger
-from playwright.async_api import Page, Browser
-import playwright_aws_lambda
+from weasyprint import HTML, CSS
 
 # Import the global httpx client context manager
 from scraper import get_http_client
@@ -308,52 +306,9 @@ class ColaDocumentFetcher:
             logger.error(f"Failed to fetch document for {ttb_id} after {max_retries} attempts")
             return None
 
-    async def _convert_html_to_pdf_bytes_async(
-        self,
-        html: str,
-        browser: Browser
-    ) -> Optional[bytes]:
-        """
-        Convert HTML to PDF bytes using playwright (async version).
-
-        Args:
-            html: HTML content
-            browser: Playwright browser instance
-
-        Returns:
-            PDF content as bytes or None if failed
-        """
-        try:
-            # Create a new page
-            page = await browser.new_page()
-
-            # Set the HTML content
-            await page.set_content(html, wait_until='networkidle')
-
-            # Generate PDF with print settings (returns bytes)
-            pdf_bytes = await page.pdf(
-                format='Letter',
-                print_background=True,
-                margin={
-                    'top': '0.5in',
-                    'right': '0.5in',
-                    'bottom': '0.5in',
-                    'left': '0.5in'
-                }
-            )
-
-            await page.close()
-
-            logger.success(f"PDF generated: {len(pdf_bytes)} bytes")
-            return pdf_bytes
-
-        except Exception as e:
-            logger.error(f"Error converting HTML to PDF: {e}")
-            return None
-
     def convert_html_to_pdf_bytes(self, html: str, ttb_id: str) -> Optional[bytes]:
         """
-        Convert HTML document to PDF bytes using playwright.
+        Convert HTML document to PDF bytes using weasyprint.
 
         Args:
             html: HTML content
@@ -364,26 +319,27 @@ class ColaDocumentFetcher:
         """
         logger.info(f"Converting HTML to PDF bytes for {ttb_id}")
 
-        async def run_conversion():
-            # Launch browser using playwright-aws-lambda (optimized for AWS Lambda/Vercel)
-            browser = await playwright_aws_lambda.launch()
-            pdf_bytes = await self._convert_html_to_pdf_bytes_async(html, browser)
-            await browser.close()
+        try:
+            # Create HTML object from string
+            html_doc = HTML(string=html)
+
+            # Generate PDF with custom CSS for margins
+            css = CSS(string='''
+                @page {
+                    size: letter;
+                    margin: 0.5in;
+                }
+            ''')
+
+            # Render to PDF bytes
+            pdf_bytes = html_doc.write_pdf(stylesheets=[css])
+
+            logger.success(f"PDF generated: {len(pdf_bytes)} bytes")
             return pdf_bytes
 
-        # Check if there's already a running event loop
-        try:
-            loop = asyncio.get_running_loop()
-            # If we're here, there's already a loop running
-            # We need to use a different approach - run in a thread
-            import nest_asyncio
-            nest_asyncio.apply()
-            pdf_bytes = asyncio.run(run_conversion())
-        except RuntimeError:
-            # No running loop, safe to use asyncio.run()
-            pdf_bytes = asyncio.run(run_conversion())
-
-        return pdf_bytes
+        except Exception as e:
+            logger.error(f"Error converting HTML to PDF: {e}")
+            return None
 
     def fetch_and_generate_pdf_bytes(self, ttb_id: str) -> Optional[bytes]:
         """
