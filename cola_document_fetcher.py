@@ -16,7 +16,8 @@ from bs4 import BeautifulSoup
 from pathlib import Path
 from typing import Optional, Tuple
 from loguru import logger
-from playwright.async_api import async_playwright, Page, Browser
+from playwright.async_api import Page, Browser
+import playwright_aws_lambda
 
 # Import the global httpx client context manager
 from scraper import get_http_client
@@ -364,12 +365,11 @@ class ColaDocumentFetcher:
         logger.info(f"Converting HTML to PDF bytes for {ttb_id}")
 
         async def run_conversion():
-            async with async_playwright() as p:
-                # Launch browser in headless mode
-                browser = await p.chromium.launch(headless=True)
-                pdf_bytes = await self._convert_html_to_pdf_bytes_async(html, browser)
-                await browser.close()
-                return pdf_bytes
+            # Launch browser using playwright-aws-lambda (optimized for AWS Lambda/Vercel)
+            browser = await playwright_aws_lambda.launch()
+            pdf_bytes = await self._convert_html_to_pdf_bytes_async(html, browser)
+            await browser.close()
+            return pdf_bytes
 
         # Check if there's already a running event loop
         try:
