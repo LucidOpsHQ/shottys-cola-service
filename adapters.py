@@ -356,7 +356,8 @@ class AirtableAdapter(StorageAdapter):
     def create_items(self, items: List[TTBItem]) -> int:
         """
         Create new items in Airtable using batch operations.
-        If fetch_documents is enabled, also fetches and uploads PDF documents for each item.
+        If fetch_documents is enabled, also fetches and uploads PDF documents for each item
+        using a persistent browser session.
 
         Args:
             items: List of TTBItem models to create
@@ -375,21 +376,35 @@ class AirtableAdapter(StorageAdapter):
             batch_size = 10
             created_count = 0
 
-            for i in range(0, len(items), batch_size):
-                batch = items[i:i + batch_size]
-                records_data = [self._item_to_record(item) for item in batch]
+            # Use context manager to manage browser session lifecycle if fetching documents
+            if self.fetch_documents and self.document_fetcher:
+                with self.document_fetcher:  # Opens browser connection
+                    logger.info("Browser session established for batch PDF generation")
 
-                created_records = self.table.batch_create(records_data)
-                created_count += len(batch)
-                logger.debug(f"Created batch {i // batch_size + 1}: {len(batch)} records")
+                    for i in range(0, len(items), batch_size):
+                        batch = items[i:i + batch_size]
+                        records_data = [self._item_to_record(item) for item in batch]
 
-                # Fetch and upload documents if enabled
-                if self.fetch_documents and self.document_fetcher:
-                    for idx, item in enumerate(batch):
-                        record_id = created_records[idx]['id']
-                        self._fetch_and_upload_document(item.ttb_id, record_id)
-                        # Small delay to avoid rate limiting
-                        time.sleep(0.5)
+                        created_records = self.table.batch_create(records_data)
+                        created_count += len(batch)
+                        logger.debug(f"Created batch {i // batch_size + 1}: {len(batch)} records")
+
+                        # Fetch and upload documents using persistent browser session
+                        for idx, item in enumerate(batch):
+                            record_id = created_records[idx]['id']
+                            self._fetch_and_upload_document(item.ttb_id, record_id)
+                            # Small delay to avoid rate limiting
+                            time.sleep(0.5)
+                # Browser session automatically closed here
+            else:
+                # No document fetching - just create records
+                for i in range(0, len(items), batch_size):
+                    batch = items[i:i + batch_size]
+                    records_data = [self._item_to_record(item) for item in batch]
+
+                    created_records = self.table.batch_create(records_data)
+                    created_count += len(batch)
+                    logger.debug(f"Created batch {i // batch_size + 1}: {len(batch)} records")
 
             logger.success(f"Successfully created {created_count} records in Airtable")
             return created_count

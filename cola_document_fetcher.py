@@ -127,7 +127,66 @@ class ColaDocumentFetcher:
         if not self.browserless_wss_endpoint:
             raise ValueError("Browserless WSS endpoint not provided. Set BROWSERLESS_WSS_ENDPOINT environment variable or pass browserless_wss_endpoint parameter.")
 
+        # Browser session management
+        self._playwright = None
+        self._browser = None
+        self._context = None
+
         logger.info(f"Initialized COLA document fetcher with Browserless")
+
+    def connect_browser(self):
+        """
+        Connect to Browserless browser. Call this once before fetching multiple documents.
+        """
+        if self._browser is not None:
+            logger.debug("Browser already connected")
+            return
+
+        logger.info(f"Connecting to Browserless at {self.browserless_wss_endpoint}")
+        self._playwright = sync_playwright().start()
+        self._browser = self._playwright.chromium.connect_over_cdp(self.browserless_wss_endpoint)
+        self._context = self._browser.contexts[0] if self._browser.contexts else self._browser.new_context()
+        logger.success("Browser session established and ready for reuse")
+
+    def disconnect_browser(self):
+        """
+        Disconnect from browser and cleanup resources. Call this after all documents are fetched.
+        """
+        if self._context:
+            try:
+                self._context.close()
+                logger.debug("Browser context closed")
+            except Exception as e:
+                logger.warning(f"Error closing context: {e}")
+            self._context = None
+
+        if self._browser:
+            try:
+                self._browser.close()
+                logger.debug("Browser connection closed")
+            except Exception as e:
+                logger.warning(f"Error closing browser: {e}")
+            self._browser = None
+
+        if self._playwright:
+            try:
+                self._playwright.stop()
+                logger.debug("Playwright stopped")
+            except Exception as e:
+                logger.warning(f"Error stopping Playwright: {e}")
+            self._playwright = None
+
+        logger.info("Browser session cleaned up")
+
+    def __enter__(self):
+        """Context manager entry - connects browser."""
+        self.connect_browser()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit - disconnects browser."""
+        self.disconnect_browser()
+        return False
 
     def _check_for_captcha_on_page(self, page: Page) -> Tuple[bool, Optional[str]]:
         """
@@ -273,6 +332,9 @@ class ColaDocumentFetcher:
         """
         Fetch the COLA document as a PDF, handling captcha if present.
 
+        Uses persistent browser session if connected via connect_browser(),
+        otherwise creates a temporary session.
+
         Args:
             ttb_id: TTB ID to fetch
             max_retries: Maximum number of retry attempts
@@ -284,59 +346,71 @@ class ColaDocumentFetcher:
 
         logger.info(f"Fetching COLA document PDF for TTB ID: {ttb_id}")
 
-        with sync_playwright() as p:
-            try:
-                # Connect to Browserless via WSS
-                logger.info(f"Connecting to Browserless at {self.browserless_wss_endpoint}")
-                browser = p.chromium.connect_over_cdp(self.browserless_wss_endpoint)
+        # Check if we have a persistent browser session
+        use_persistent_session = self._browser is not None
 
-                # Create a new context and page
+        if not use_persistent_session:
+            logger.debug("No persistent browser session, creating temporary session")
+
+        try:
+            # Use persistent session if available, otherwise create temporary one
+            if use_persistent_session:
+                context = self._context
+                page = context.new_page()
+            else:
+                # Temporary session for standalone usage
+                playwright = sync_playwright().start()
+                browser = playwright.chromium.connect_over_cdp(self.browserless_wss_endpoint)
                 context = browser.contexts[0] if browser.contexts else browser.new_context()
                 page = context.new_page()
 
-                try:
-                    # Navigate to the URL
-                    logger.info(f"Navigating to {url}")
-                    page.goto(url, wait_until='networkidle', timeout=30000)
+            try:
+                # Navigate to the URL
+                logger.info(f"Navigating to {url}")
+                page.goto(url, wait_until='networkidle', timeout=30000)
 
-                    # Handle captcha if present
-                    if not self._handle_captcha(page, max_retries):
-                        logger.error("Failed to handle captcha or reach document page")
-                        return None
+                # Handle captcha if present
+                if not self._handle_captcha(page, max_retries):
+                    logger.error("Failed to handle captcha or reach document page")
+                    return None
 
-                    # Wait for all images to load (label images, signature, etc.)
-                    # The document includes images like:
-                    # - /colasonline/publicViewSignature.do?ttbid=...
-                    # - /colasonline/publicViewAttachment.do?filename=...
-                    logger.info("Waiting for all images to load...")
-                    page.wait_for_load_state('networkidle', timeout=10000)
-                    page.wait_for_timeout(2000)  # Additional wait for dynamic content
+                # Wait for all images to load (label images, signature, etc.)
+                # The document includes images like:
+                # - /colasonline/publicViewSignature.do?ttbid=...
+                # - /colasonline/publicViewAttachment.do?filename=...
+                logger.info("Waiting for all images to load...")
+                page.wait_for_load_state('networkidle', timeout=10000)
+                page.wait_for_timeout(2000)  # Additional wait for dynamic content
 
-                    # Generate PDF using browser-native print
-                    logger.info("Generating PDF...")
-                    pdf_bytes = page.pdf(
-                        format='Letter',
-                        print_background=True,
-                        margin={
-                            'top': '0.5in',
-                            'right': '0.5in',
-                            'bottom': '0.5in',
-                            'left': '0.5in'
-                        }
-                    )
+                # Generate PDF using browser-native print
+                logger.info("Generating PDF...")
+                pdf_bytes = page.pdf(
+                    format='Letter',
+                    print_background=True,
+                    margin={
+                        'top': '0.5in',
+                        'right': '0.5in',
+                        'bottom': '0.5in',
+                        'left': '0.5in'
+                    }
+                )
 
-                    logger.success(f"Successfully generated PDF for {ttb_id}: {len(pdf_bytes)} bytes")
-                    return pdf_bytes
+                logger.success(f"Successfully generated PDF for {ttb_id}: {len(pdf_bytes)} bytes")
+                return pdf_bytes
 
-                finally:
-                    # Clean up
-                    page.close()
+            finally:
+                # Clean up page (but not context/browser if using persistent session)
+                page.close()
+
+                if not use_persistent_session:
+                    # Clean up temporary session
                     context.close()
                     browser.close()
+                    playwright.stop()
 
-            except Exception as e:
-                logger.error(f"Error fetching document PDF for {ttb_id}: {e}")
-                return None
+        except Exception as e:
+            logger.error(f"Error fetching document PDF for {ttb_id}: {e}")
+            return None
 
 
 # Example usage

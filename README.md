@@ -104,6 +104,11 @@ AIRTABLE_TABLE_NAME=TTB COLAs
 TTB_PRODUCT_NAMES=["Shottys"]
 TTB_DELAY=1.0
 
+# Document Fetching Configuration (optional)
+FETCH_DOCUMENTS=false  # Set to true to automatically fetch and upload COLA PDFs
+TWO_CAPTCHA_API_KEY=your_2captcha_api_key_here  # Required if FETCH_DOCUMENTS=true
+BROWSERLESS_WSS_ENDPOINT=wss://chrome.browserless.io?token=YOUR_TOKEN  # Required if FETCH_DOCUMENTS=true
+
 # Sync Strategy
 SYNC_STRATEGY=incremental  # Options: incremental, full, replace
 ```
@@ -238,6 +243,9 @@ cola-service/
 - **pydantic**: Data validation and modeling
 - **loguru**: Structured logging
 - **pyairtable**: Airtable API client
+- **playwright**: Browser automation for PDF generation (optional)
+- **fastapi**: Web framework for API endpoints
+- **sentry-sdk**: Error tracking and monitoring
 
 ## Railway Deployment
 
@@ -266,12 +274,20 @@ This service is configured for deployment on Railway with automatic cron job sch
    TTB_PRODUCT_NAMES=["Shottys"]
    TTB_DELAY=1.0
    SYNC_STRATEGY=incremental
+
+   # Optional: Enable PDF document fetching
+   FETCH_DOCUMENTS=true
+   TWO_CAPTCHA_API_KEY=your_2captcha_key
+   BROWSERLESS_WSS_ENDPOINT=wss://chrome.browserless.io?token=YOUR_TOKEN
    ```
 
    Or use Railway CLI:
    ```bash
    railway variables set AIRTABLE_API_KEY=your_api_key
    railway variables set AIRTABLE_BASE_ID=your_base_id
+   railway variables set FETCH_DOCUMENTS=true
+   railway variables set TWO_CAPTCHA_API_KEY=your_2captcha_key
+   railway variables set BROWSERLESS_WSS_ENDPOINT=wss://chrome.browserless.io?token=YOUR_TOKEN
    ```
 
 4. **Deploy:**
@@ -323,18 +339,31 @@ python api/cron.py
 - **Logs**: View logs in Railway Dashboard → Your Project → Deployments
 - **Metrics**: Check in Railway Dashboard → Your Project → Metrics
 - **Response Format**:
+
+  **Immediate Response (HTTP 202 - Accepted):**
   ```json
   {
-    "status": "success",
-    "message": "TTB COLA sync completed",
-    "stats": {
-      "total": 52,
-      "new": 3,
-      "skipped": 49
-    },
+    "status": "accepted",
+    "message": "TTB COLA sync job started in background",
     "timestamp": 1234567890.123
   }
   ```
+
+  The actual sync runs in the background. Check logs for completion status and statistics.
+
+### Background Job Architecture
+
+The `/api/cron` endpoint uses FastAPI's `BackgroundTasks` to run sync jobs asynchronously:
+
+1. **Immediate Response**: Endpoint returns HTTP 202 within milliseconds
+2. **Background Processing**: Sync job continues running in the background
+3. **No Timeout Issues**: Railway cron doesn't timeout waiting for response
+4. **Complete Logging**: All progress is logged to stdout and Sentry
+
+This architecture is ideal for long-running tasks like:
+- Scraping multiple products
+- Fetching and generating PDFs with Playwright
+- Solving captchas (which can take 30-60 seconds each)
 
 ### Railway Limits
 
@@ -349,9 +378,9 @@ python api/cron.py
   - Priority support
 
 If scraping takes longer than expected, consider:
-1. Optimizing the scraper (reduce delay, fewer pages)
+1. The async job architecture already handles long-running tasks
 2. Upgrading to Pro plan for more resources
-3. Splitting into multiple smaller jobs
+3. Disabling PDF fetching (`FETCH_DOCUMENTS=false`) for faster syncs
 
 ## License
 

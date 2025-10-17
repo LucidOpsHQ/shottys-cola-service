@@ -184,13 +184,28 @@ class FullSyncStrategy(SyncStrategy):
         else:
             logger.info("Step 4a: No new records to create")
 
-        # Step 5: Update existing items
+        # Step 5: Update existing items (with browser session if document fetching is enabled)
         updated_count = 0
         if existing_items:
             logger.info(f"Step 4b: Updating {len(existing_items)} existing records...")
-            for item in existing_items:
-                if self.storage_target.update_item(item):
-                    updated_count += 1
+
+            # Check if storage target has document_fetcher with context manager support
+            has_document_fetcher = (hasattr(self.storage_target, 'document_fetcher') and
+                                   self.storage_target.document_fetcher is not None and
+                                   hasattr(self.storage_target.document_fetcher, '__enter__'))
+
+            if has_document_fetcher:
+                # Use persistent browser session for updates
+                with self.storage_target.document_fetcher:
+                    logger.info("Browser session established for batch updates")
+                    for item in existing_items:
+                        if self.storage_target.update_item(item):
+                            updated_count += 1
+            else:
+                # No document fetcher or no browser session support
+                for item in existing_items:
+                    if self.storage_target.update_item(item):
+                        updated_count += 1
         else:
             logger.info("Step 4b: No records to update")
 

@@ -1,6 +1,6 @@
 """
 FastAPI function for scheduled TTB COLA scraping and sync.
-Designed for Railway deployment with cron scheduling.
+Designed for Railway deployment with built-in cron scheduling.
 """
 import json
 import os
@@ -9,6 +9,7 @@ import time
 import logging
 import asyncio
 from typing import Dict, Any
+from contextlib import asynccontextmanager
 
 # Add parent directory to path to import our modules
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -19,6 +20,8 @@ from loguru import logger
 import sentry_sdk
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.loguru import LoguruIntegration
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 from scraper import TTBScraper
 from adapters import AirtableAdapter
@@ -65,29 +68,119 @@ else:
     logger.warning("SENTRY_DSN not set - error reporting disabled")
 
 
+# Initialize scheduler
+scheduler = AsyncIOScheduler()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Lifespan context manager for FastAPI app.
+    Starts the scheduler on startup and shuts it down on shutdown.
+    """
+    # Startup
+    cron_schedule = os.getenv("CRON_SCHEDULE", "0 0 * * *")  # Default: daily at midnight
+    enable_cron = os.getenv("ENABLE_CRON", "true").lower() == "true"
+
+    if enable_cron:
+        logger.info(f"Configuring cron scheduler with schedule: {cron_schedule}")
+
+        # Parse cron expression (minute hour day month day_of_week)
+        try:
+            scheduler.add_job(
+                run_sync_job,
+                trigger=CronTrigger.from_crontab(cron_schedule),
+                id="ttb_cola_sync",
+                name="TTB COLA Sync Job",
+                replace_existing=True,
+                misfire_grace_time=3600  # Allow 1 hour grace time for missed jobs
+            )
+            scheduler.start()
+            logger.success(f"Cron scheduler started with schedule: {cron_schedule}")
+            logger.info("Next scheduled run: " + str(scheduler.get_job("ttb_cola_sync").next_run_time))
+        except Exception as e:
+            logger.error(f"Failed to configure cron scheduler: {e}")
+            logger.warning("Cron scheduling disabled, manual trigger still available")
+    else:
+        logger.info("Cron scheduling disabled via ENABLE_CRON=false")
+
+    yield  # App is running
+
+    # Shutdown
+    if scheduler.running:
+        scheduler.shutdown()
+        logger.info("Cron scheduler shut down")
+
+
 app = FastAPI(
     title="TTB COLA Scraper API",
-    description="Scheduled scraping and sync of TTB COLA data to Airtable",
-    version="1.0.0"
+    description="Scheduled scraping and sync of TTB COLA data to Airtable with built-in cron",
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 
 @app.get("/api/cron")
 async def get_cron(background_tasks: BackgroundTasks):
     """Handle GET request (manual trigger). Returns immediately and runs sync in background."""
+    logger.info("Manual trigger via GET /api/cron")
     return await start_background_sync(background_tasks)
 
 
 @app.post("/api/cron")
 async def post_cron(background_tasks: BackgroundTasks):
     """Handle POST request (cron trigger). Returns immediately and runs sync in background."""
+    logger.info("Manual trigger via POST /api/cron")
     return await start_background_sync(background_tasks)
+
+
+@app.get("/api/cron/status")
+async def cron_status():
+    """Get the status of the cron scheduler."""
+    if not scheduler.running:
+        return {
+            "enabled": False,
+            "message": "Cron scheduler is not running"
+        }
+
+    job = scheduler.get_job("ttb_cola_sync")
+    if not job:
+        return {
+            "enabled": False,
+            "message": "Cron job not configured"
+        }
+
+    return {
+        "enabled": True,
+        "schedule": os.getenv("CRON_SCHEDULE", "0 0 * * *"),
+        "next_run": str(job.next_run_time),
+        "job_id": job.id,
+        "job_name": job.name
+    }
 
 
 @app.get("/api/health")
 async def health_check():
     """Health check endpoint."""
-    return {"status": "healthy", "timestamp": time.time()}
+    cron_info = {}
+    if scheduler.running:
+        job = scheduler.get_job("ttb_cola_sync")
+        if job:
+            cron_info = {
+                "cron_enabled": True,
+                "next_run": str(job.next_run_time),
+                "schedule": os.getenv("CRON_SCHEDULE", "0 0 * * *")
+            }
+        else:
+            cron_info = {"cron_enabled": False}
+    else:
+        cron_info = {"cron_enabled": False}
+
+    return {
+        "status": "healthy",
+        "timestamp": time.time(),
+        "cron": cron_info
+    }
 
 
 async def start_background_sync(background_tasks: BackgroundTasks) -> Dict[str, Any]:
