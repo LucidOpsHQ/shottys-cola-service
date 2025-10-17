@@ -285,44 +285,145 @@ class AirtableAdapter(StorageAdapter):
             logger.exception(f"Failed to mark records as deprecated: {e}")
             raise
 
-    def _upload_pdf_to_record(self, ttb_id: str, record_id: str, pdf_bytes: bytes) -> bool:
+    def _has_cola_documents(self, record_id: str) -> tuple[bool, bool]:
         """
-        Upload PDF content to Airtable record attachment field.
+        Check if COLA and Latest COLA fields have existing attachments.
+
+        Args:
+            record_id: Airtable record ID
+
+        Returns:
+            Tuple of (has_cola, has_latest_cola)
+        """
+        try:
+            record = self.table.get(record_id)
+            fields = record.get("fields", {})
+
+            has_cola = bool(fields.get("COLA"))
+            has_latest_cola = bool(fields.get("Latest COLA"))
+
+            return has_cola, has_latest_cola
+        except Exception as e:
+            logger.error(f"Failed to check existing documents for {record_id}: {e}")
+            return False, False
+
+    def _has_fields_changed(self, ttb_id: str, new_item: TTBItem) -> bool:
+        """
+        Check if any fields have changed between existing record and new data.
+
+        Args:
+            ttb_id: TTB ID to check
+            new_item: New TTBItem data
+
+        Returns:
+            True if any fields changed, False otherwise
+        """
+        try:
+            # Find the existing record
+            formula = f"{{TTB ID}} = {ttb_id}"
+            existing_records = self.table.all(formula=formula)
+
+            if not existing_records:
+                # Record doesn't exist, so it's a "change"
+                return True
+
+            existing_fields = existing_records[0]["fields"]
+            new_record = self._item_to_record(new_item)
+
+            # Compare all fields except Deprecated (which we control)
+            # and COLA/Latest COLA (which are attachment fields)
+            fields_to_check = [
+                "Permit No", "Serial Number", "Completed Date", "Fanciful Name",
+                "Brand Name", "Origin Code", "Origin Desc", "Class/Type",
+                "Class/Type Desc", "Status", "Vendor Code", "Type of Application",
+                "For Sale In", "Total Bottle Capacity", "Grape Varietals",
+                "Wine Vintage", "Formula", "Lab No", "Approval Date",
+                "Qualifications", "Applicant Name", "Applicant Address",
+                "Applicant City", "Applicant State", "Applicant ZIP",
+                "Contact Name", "Contact Phone", "Contact Email"
+            ]
+
+            for field in fields_to_check:
+                old_value = existing_fields.get(field)
+                new_value = new_record.get(field)
+
+                # Handle None/empty string equivalence
+                if (old_value or new_value) and old_value != new_value:
+                    logger.debug(f"Field '{field}' changed for {ttb_id}: {old_value} -> {new_value}")
+                    return True
+
+            logger.debug(f"No field changes detected for {ttb_id}")
+            return False
+
+        except Exception as e:
+            logger.error(f"Failed to check field changes for {ttb_id}: {e}")
+            # On error, assume changed to be safe
+            return True
+
+    def _upload_pdf_to_fields(self, ttb_id: str, record_id: str, pdf_bytes: bytes, upload_to_both: bool = False) -> bool:
+        """
+        Upload PDF content to Airtable record attachment fields.
 
         Args:
             ttb_id: TTB ID (for logging and filename)
             record_id: Airtable record ID
             pdf_bytes: PDF content as bytes
+            upload_to_both: If True, uploads to both COLA and Latest COLA fields
+                           (COLA adds to existing, Latest COLA replaces)
 
         Returns:
             True if successful
         """
         try:
-            # Upload attachment using pyairtable's upload method
             filename = f"COLA_{ttb_id}.pdf"
 
-            # Create attachment using pyairtable Api's upload method
-            attachment = self.table.upload_attachment(
+            # Upload to COLA field (always - adds to existing attachments)
+            self.table.upload_attachment(
                 record_id,
                 "COLA",  # Field name
                 filename,
                 pdf_bytes
             )
+            logger.debug(f"Uploaded PDF to COLA field for {ttb_id}")
 
-            logger.success(f"Uploaded PDF to record {record_id} for TTB ID {ttb_id}")
+            # Upload to Latest COLA field if requested (replaces existing)
+            if upload_to_both:
+                # First, clear the Latest COLA field to replace (not add to) existing attachments
+                self.table.update(record_id, {"Latest COLA": []})
+                logger.debug(f"Cleared Latest COLA field for {ttb_id}")
+
+                # Then upload the new PDF
+                self.table.upload_attachment(
+                    record_id,
+                    "Latest COLA",  # Field name
+                    filename,
+                    pdf_bytes
+                )
+                logger.debug(f"Uploaded PDF to Latest COLA field for {ttb_id}")
+
+            logger.success(f"Uploaded PDF to record {record_id} for TTB ID {ttb_id} (both fields: {upload_to_both})")
             return True
 
         except Exception as e:
             logger.error(f"Failed to upload PDF for {ttb_id}: {e}")
             return False
 
-    def _fetch_and_upload_document(self, ttb_id: str, record_id: str) -> bool:
+    def _fetch_and_upload_document(self, ttb_id: str, record_id: str, item: TTBItem = None, is_new: bool = False) -> bool:
         """
-        Fetch document and upload PDF to Airtable record.
+        Fetch document and upload PDF to Airtable record with smart upload logic.
+
+        Smart upload logic:
+        - For new records: always upload to both COLA and Latest COLA fields
+        - For existing records:
+          - If no documents exist: upload to both fields
+          - If documents exist and fields changed: replace Latest COLA, add to COLA
+          - If documents exist and no changes: skip upload
 
         Args:
             ttb_id: TTB ID to fetch document for
             record_id: Airtable record ID to update
+            item: TTBItem data (required for change detection on updates)
+            is_new: True if this is a new record (always upload to both fields)
 
         Returns:
             True if successful
@@ -332,22 +433,70 @@ class AirtableAdapter(StorageAdapter):
             return False
 
         try:
-            logger.info(f"Fetching and uploading document for TTB ID: {ttb_id}")
+            # For new records, always upload to both fields
+            if is_new:
+                logger.info(f"Fetching and uploading document for new record: {ttb_id}")
 
-            # Fetch PDF content
-            pdf_bytes = self.document_fetcher.fetch_document_pdf(ttb_id)
+                pdf_bytes = self.document_fetcher.fetch_document_pdf(ttb_id)
+                if not pdf_bytes:
+                    logger.error(f"Failed to fetch document for {ttb_id}")
+                    return False
 
-            if not pdf_bytes:
-                logger.error(f"Failed to fetch document for {ttb_id}")
-                return False
+                success = self._upload_pdf_to_fields(ttb_id, record_id, pdf_bytes, upload_to_both=True)
+                if success:
+                    logger.success(f"Successfully uploaded PDF to both fields for new record {ttb_id}")
+                return success
 
-            # Upload PDF to Airtable
-            success = self._upload_pdf_to_record(ttb_id, record_id, pdf_bytes)
+            # For existing records, check conditions
+            has_cola, has_latest_cola = self._has_cola_documents(record_id)
 
-            if success:
-                logger.success(f"Successfully uploaded PDF for {ttb_id}")
+            # If no documents exist, upload to both fields
+            if not has_cola or not has_latest_cola:
+                logger.info(f"No existing documents for {ttb_id}, uploading to both fields")
 
-            return success
+                pdf_bytes = self.document_fetcher.fetch_document_pdf(ttb_id)
+                if not pdf_bytes:
+                    logger.error(f"Failed to fetch document for {ttb_id}")
+                    return False
+
+                success = self._upload_pdf_to_fields(ttb_id, record_id, pdf_bytes, upload_to_both=True)
+                if success:
+                    logger.success(f"Successfully uploaded PDF to both fields for {ttb_id}")
+                return success
+
+            # Documents exist - check if fields changed
+            if item:
+                fields_changed = self._has_fields_changed(ttb_id, item)
+
+                if not fields_changed:
+                    logger.info(f"No fields changed and documents exist for {ttb_id}, skipping PDF upload")
+                    return True  # Not an error, just skipping
+
+                # Fields changed - replace Latest COLA and add to COLA
+                logger.info(f"Fields changed for {ttb_id}, updating documents")
+
+                pdf_bytes = self.document_fetcher.fetch_document_pdf(ttb_id)
+                if not pdf_bytes:
+                    logger.error(f"Failed to fetch document for {ttb_id}")
+                    return False
+
+                success = self._upload_pdf_to_fields(ttb_id, record_id, pdf_bytes, upload_to_both=True)
+                if success:
+                    logger.success(f"Successfully updated PDF for changed record {ttb_id}")
+                return success
+            else:
+                # No item provided for comparison, upload to be safe
+                logger.warning(f"No item data for change detection on {ttb_id}, uploading to both fields")
+
+                pdf_bytes = self.document_fetcher.fetch_document_pdf(ttb_id)
+                if not pdf_bytes:
+                    logger.error(f"Failed to fetch document for {ttb_id}")
+                    return False
+
+                success = self._upload_pdf_to_fields(ttb_id, record_id, pdf_bytes, upload_to_both=True)
+                if success:
+                    logger.success(f"Successfully uploaded PDF for {ttb_id}")
+                return success
 
         except Exception as e:
             logger.error(f"Error fetching and uploading document for {ttb_id}: {e}")
@@ -392,7 +541,7 @@ class AirtableAdapter(StorageAdapter):
                         # Fetch and upload documents using persistent browser session
                         for idx, item in enumerate(batch):
                             record_id = created_records[idx]['id']
-                            self._fetch_and_upload_document(item.ttb_id, record_id)
+                            self._fetch_and_upload_document(item.ttb_id, record_id, item=item, is_new=True)
                             # Small delay to avoid rate limiting
                             time.sleep(0.5)
                 # Browser session automatically closed here
@@ -439,9 +588,9 @@ class AirtableAdapter(StorageAdapter):
             self.table.update(record_id, record_data)
             logger.debug(f"Updated record: {item.ttb_id}")
 
-            # Fetch and upload document if enabled
+            # Fetch and upload document if enabled (using smart upload logic)
             if self.fetch_documents and self.document_fetcher:
-                self._fetch_and_upload_document(item.ttb_id, record_id)
+                self._fetch_and_upload_document(item.ttb_id, record_id, item=item, is_new=False)
                 time.sleep(0.5)  # Small delay to avoid rate limiting
 
             return True
