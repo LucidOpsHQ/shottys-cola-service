@@ -150,7 +150,7 @@ HTML documents are uploaded directly without conversion:
 
 - No conversion needed - original HTML is preserved
 - No external dependencies required
-- Works on all deployment platforms (including Vercel serverless)
+- Works on all deployment platforms (including Railway)
 - Output: Direct to Airtable as bytes (no filesystem storage)
 
 ## Cost Considerations

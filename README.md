@@ -239,25 +239,25 @@ cola-service/
 - **loguru**: Structured logging
 - **pyairtable**: Airtable API client
 
-## Vercel Deployment
+## Railway Deployment
 
-This service is configured for deployment on Vercel with automatic cron job scheduling.
+This service is configured for deployment on Railway with automatic cron job scheduling.
 
 ### Setup
 
-1. **Install Vercel CLI:**
+1. **Install Railway CLI:**
    ```bash
-   npm install -g vercel
+   npm install -g @railway/cli
    ```
 
-2. **Login to Vercel:**
+2. **Login to Railway:**
    ```bash
-   vercel login
+   railway login
    ```
 
 3. **Configure Environment Variables:**
 
-   In your Vercel project settings, add the following environment variables:
+   In your Railway project settings, add the following environment variables:
 
    ```
    AIRTABLE_API_KEY=your_api_key
@@ -268,34 +268,28 @@ This service is configured for deployment on Vercel with automatic cron job sche
    SYNC_STRATEGY=incremental
    ```
 
-   Or use Vercel CLI:
+   Or use Railway CLI:
    ```bash
-   vercel env add AIRTABLE_API_KEY
-   vercel env add AIRTABLE_BASE_ID
+   railway variables set AIRTABLE_API_KEY=your_api_key
+   railway variables set AIRTABLE_BASE_ID=your_base_id
    ```
 
 4. **Deploy:**
    ```bash
-   vercel --prod
+   railway up
    ```
 
 ### Cron Configuration
 
-The cron job is configured in `vercel.json`:
+The cron job is configured in `railway.toml`:
 - **Schedule**: `0 0 * * *` (Daily at midnight UTC)
 - **Endpoint**: `/api/cron`
 - **Strategy**: Incremental sync (only new records)
 
-To change the schedule, edit the `crons` section in `vercel.json`:
-```json
-{
-  "crons": [
-    {
-      "path": "/api/cron",
-      "schedule": "0 */6 * * *"  // Every 6 hours
-    }
-  ]
-}
+To change the schedule, edit the `[cron]` section in `railway.toml`:
+```toml
+[cron]
+schedule = "0 */6 * * *"  # Every 6 hours
 ```
 
 **Cron Schedule Examples:**
@@ -308,12 +302,12 @@ To change the schedule, edit the `crons` section in `vercel.json`:
 
 You can manually trigger the sync by visiting:
 ```
-https://your-project.vercel.app/api/cron
+https://your-project.up.railway.app/api/cron
 ```
 
 Or using curl:
 ```bash
-curl https://your-project.vercel.app/api/cron
+curl https://your-project.up.railway.app/api/cron
 ```
 
 ### Local Testing
@@ -324,16 +318,10 @@ python api/cron.py
 # Visit http://localhost:8000/api/cron
 ```
 
-Or use Vercel Dev:
-```bash
-vercel dev
-# Visit http://localhost:3000/api/cron
-```
-
 ### Monitoring
 
-- **Logs**: View logs in Vercel Dashboard → Your Project → Logs
-- **Cron Executions**: Check in Vercel Dashboard → Your Project → Cron Jobs
+- **Logs**: View logs in Railway Dashboard → Your Project → Deployments
+- **Metrics**: Check in Railway Dashboard → Your Project → Metrics
 - **Response Format**:
   ```json
   {
@@ -348,21 +336,22 @@ vercel dev
   }
   ```
 
-### Vercel Limits
+### Railway Limits
 
-- **Hobby Plan**:
-  - Function execution: 10 seconds max
-  - Cron jobs: Included
-  - Bandwidth: 100 GB/month
+- **Free Plan**:
+  - 500 hours per month
+  - 512MB RAM
+  - 1GB disk
 
 - **Pro Plan**:
-  - Function execution: 60 seconds max
-  - More generous limits
+  - Unlimited hours
+  - Configurable resources
+  - Priority support
 
-If scraping takes longer than the execution limit, consider:
+If scraping takes longer than expected, consider:
 1. Optimizing the scraper (reduce delay, fewer pages)
-2. Upgrading to Pro plan
-3. Using a different hosting solution (AWS Lambda, etc.)
+2. Upgrading to Pro plan for more resources
+3. Splitting into multiple smaller jobs
 
 ## License
 

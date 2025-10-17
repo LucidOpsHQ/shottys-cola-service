@@ -1,0 +1,12 @@
+[build]
+builder = "nixpacks"
+buildCommand = "pip install -r requirements.txt"
+
+[deploy]
+startCommand = "uvicorn api.cron:app --host 0.0.0.0 --port $PORT"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10
+
+# Note: Railway cron jobs should be configured in the Railway dashboard
+# or by calling your deployed service URL on a schedule.
+# The $PORT variable is automatically provided by Railway for your web service.

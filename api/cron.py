@@ -1,5 +1,6 @@
 """
-FastAPI serverless function for scheduled TTB COLA scraping and sync.
+FastAPI function for scheduled TTB COLA scraping and sync.
+Designed for Railway deployment with cron scheduling.
 """
 import json
 import os
@@ -50,7 +51,7 @@ if sentry_dsn:
         # Capture breadcrumbs (context) for debugging
         max_breadcrumbs=50,
         # Add release tracking if available
-        release=os.getenv("VERCEL_GIT_COMMIT_SHA"),
+        release=os.getenv("RAILWAY_GIT_COMMIT_SHA"),
         # Set profile_session_sample_rate to 1.0 to profile 100%
         # of profile sessions.
         profile_session_sample_rate=1.0,
@@ -92,7 +93,7 @@ async def run_sync() -> Dict[str, Any]:
     """Execute the sync process."""
     try:
         logger.info("=" * 80)
-        logger.info("Vercel Cron Job: TTB COLA Scraper")
+        logger.info("Railway Cron Job: TTB COLA Scraper")
         logger.info("=" * 80)
 
         # Verify required environment variables
