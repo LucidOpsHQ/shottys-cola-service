@@ -7,12 +7,13 @@ import os
 import sys
 import time
 import logging
+import asyncio
 from typing import Dict, Any
 
 # Add parent directory to path to import our modules
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
 from loguru import logger
 import sentry_sdk
@@ -72,15 +73,15 @@ app = FastAPI(
 
 
 @app.get("/api/cron")
-async def get_cron():
-    """Handle GET request (manual trigger)."""
-    return await run_sync()
+async def get_cron(background_tasks: BackgroundTasks):
+    """Handle GET request (manual trigger). Returns immediately and runs sync in background."""
+    return await start_background_sync(background_tasks)
 
 
 @app.post("/api/cron")
-async def post_cron():
-    """Handle POST request (cron trigger)."""
-    return await run_sync()
+async def post_cron(background_tasks: BackgroundTasks):
+    """Handle POST request (cron trigger). Returns immediately and runs sync in background."""
+    return await start_background_sync(background_tasks)
 
 
 @app.get("/api/health")
@@ -89,11 +90,11 @@ async def health_check():
     return {"status": "healthy", "timestamp": time.time()}
 
 
-async def run_sync() -> Dict[str, Any]:
-    """Execute the sync process."""
+async def start_background_sync(background_tasks: BackgroundTasks) -> Dict[str, Any]:
+    """Start the sync process in the background and return immediately."""
     try:
         logger.info("=" * 80)
-        logger.info("Railway Cron Job: TTB COLA Scraper")
+        logger.info("Railway Cron Job: TTB COLA Scraper - Starting background job")
         logger.info("=" * 80)
 
         # Verify required environment variables
@@ -105,6 +106,39 @@ async def run_sync() -> Dict[str, Any]:
             logger.error(error_msg)
             sentry_sdk.capture_message(error_msg, level="error")
             raise HTTPException(status_code=500, detail=error_msg)
+
+        # Add the sync job to background tasks
+        background_tasks.add_task(run_sync_job)
+
+        # Return immediately
+        return JSONResponse(
+            status_code=202,
+            content={
+                "status": "accepted",
+                "message": "TTB COLA sync job started in background",
+                "timestamp": time.time()
+            }
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"Failed to start background sync: {e}")
+        sentry_sdk.capture_exception(e)
+        return JSONResponse(
+            status_code=500,
+            content={
+                "error": str(e),
+                "status": "failed",
+                "timestamp": time.time()
+            }
+        )
+
+
+def run_sync_job():
+    """Execute the sync process in the background."""
+    try:
+        logger.info("Background sync job started")
 
         # Initialize scraper
         logger.info("Initializing TTB scraper...")
@@ -134,33 +168,12 @@ async def run_sync() -> Dict[str, Any]:
         # Execute sync
         stats = strategy.sync()
 
-        logger.success("Sync completed successfully!")
+        logger.success("Background sync completed successfully!")
         logger.info(f"Stats: {stats}")
 
-        # Send success response
-        return JSONResponse(
-            status_code=200,
-            content={
-                "status": "success",
-                "message": "TTB COLA sync completed",
-                "stats": stats,
-                "timestamp": time.time()
-            }
-        )
-
-    except HTTPException:
-        raise
     except Exception as e:
-        logger.exception(f"Sync failed: {e}")
+        logger.exception(f"Background sync failed: {e}")
         sentry_sdk.capture_exception(e)
-        return JSONResponse(
-            status_code=500,
-            content={
-                "error": str(e),
-                "status": "failed",
-                "timestamp": time.time()
-            }
-        )
 # For local testing
 if __name__ == "__main__":
     import uvicorn
