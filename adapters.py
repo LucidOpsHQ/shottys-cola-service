@@ -70,7 +70,8 @@ class AirtableAdapter(StorageAdapter):
         base_id: str = None,
         table_name: str = "TTB COLAs",
         fetch_documents: bool = False,
-        two_captcha_api_key: str = None
+        two_captcha_api_key: str = None,
+        browserless_wss_endpoint: str = None
     ):
         """
         Initialize Airtable adapter.
@@ -79,8 +80,9 @@ class AirtableAdapter(StorageAdapter):
             api_key: Airtable API key (or set AIRTABLE_API_KEY env var)
             base_id: Airtable Base ID (or set AIRTABLE_BASE_ID env var)
             table_name: Name of the table to sync to
-            fetch_documents: Whether to automatically fetch and upload HTML documents
+            fetch_documents: Whether to automatically fetch and upload PDF documents
             two_captcha_api_key: 2Captcha API key (required if fetch_documents=True)
+            browserless_wss_endpoint: Browserless WSS endpoint (or set BROWSERLESS_WSS_ENDPOINT env var)
         """
         self.api_key = api_key or os.getenv("AIRTABLE_API_KEY")
         self.base_id = base_id or os.getenv("AIRTABLE_BASE_ID")
@@ -88,6 +90,7 @@ class AirtableAdapter(StorageAdapter):
 
         self.fetch_documents = fetch_documents
         self.two_captcha_api_key = two_captcha_api_key or os.getenv("TWO_CAPTCHA_API_KEY")
+        self.browserless_wss_endpoint = browserless_wss_endpoint or os.getenv("BROWSERLESS_WSS_ENDPOINT")
 
         if not self.api_key:
             raise ValueError("Airtable API key not provided. Set AIRTABLE_API_KEY environment variable or pass api_key parameter.")
@@ -98,6 +101,9 @@ class AirtableAdapter(StorageAdapter):
         if self.fetch_documents and not self.two_captcha_api_key:
             raise ValueError("TWO_CAPTCHA_API_KEY required when fetch_documents=True")
 
+        if self.fetch_documents and not self.browserless_wss_endpoint:
+            raise ValueError("BROWSERLESS_WSS_ENDPOINT required when fetch_documents=True")
+
         self.api = Api(self.api_key)
         self.table = self.api.table(self.base_id, self.table_name)
 
@@ -105,7 +111,10 @@ class AirtableAdapter(StorageAdapter):
         self.document_fetcher = None
         if self.fetch_documents:
             from cola_document_fetcher import ColaDocumentFetcher
-            self.document_fetcher = ColaDocumentFetcher(self.two_captcha_api_key)
+            self.document_fetcher = ColaDocumentFetcher(
+                self.two_captcha_api_key,
+                self.browserless_wss_endpoint
+            )
 
         logger.info(
             f"Initialized Airtable adapter for base {self.base_id}, "
@@ -276,43 +285,40 @@ class AirtableAdapter(StorageAdapter):
             logger.exception(f"Failed to mark records as deprecated: {e}")
             raise
 
-    def _upload_html_to_record(self, ttb_id: str, record_id: str, html_content: str) -> bool:
+    def _upload_pdf_to_record(self, ttb_id: str, record_id: str, pdf_bytes: bytes) -> bool:
         """
-        Upload HTML content to Airtable record attachment field.
+        Upload PDF content to Airtable record attachment field.
 
         Args:
             ttb_id: TTB ID (for logging and filename)
             record_id: Airtable record ID
-            html_content: HTML content as string
+            pdf_bytes: PDF content as bytes
 
         Returns:
             True if successful
         """
         try:
-            # Convert HTML string to bytes
-            html_bytes = html_content.encode('utf-8')
-
             # Upload attachment using pyairtable's upload method
-            filename = f"COLA_{ttb_id}.html"
+            filename = f"COLA_{ttb_id}.pdf"
 
             # Create attachment using pyairtable Api's upload method
             attachment = self.table.upload_attachment(
                 record_id,
                 "COLA",  # Field name
                 filename,
-                html_bytes
+                pdf_bytes
             )
 
-            logger.success(f"Uploaded HTML to record {record_id} for TTB ID {ttb_id}")
+            logger.success(f"Uploaded PDF to record {record_id} for TTB ID {ttb_id}")
             return True
 
         except Exception as e:
-            logger.error(f"Failed to upload HTML for {ttb_id}: {e}")
+            logger.error(f"Failed to upload PDF for {ttb_id}: {e}")
             return False
 
     def _fetch_and_upload_document(self, ttb_id: str, record_id: str) -> bool:
         """
-        Fetch document and upload HTML to Airtable record.
+        Fetch document and upload PDF to Airtable record.
 
         Args:
             ttb_id: TTB ID to fetch document for
@@ -328,18 +334,18 @@ class AirtableAdapter(StorageAdapter):
         try:
             logger.info(f"Fetching and uploading document for TTB ID: {ttb_id}")
 
-            # Fetch HTML content
-            html_content = self.document_fetcher.fetch_document_html(ttb_id)
+            # Fetch PDF content
+            pdf_bytes = self.document_fetcher.fetch_document_pdf(ttb_id)
 
-            if not html_content:
+            if not pdf_bytes:
                 logger.error(f"Failed to fetch document for {ttb_id}")
                 return False
 
-            # Upload HTML to Airtable
-            success = self._upload_html_to_record(ttb_id, record_id, html_content)
+            # Upload PDF to Airtable
+            success = self._upload_pdf_to_record(ttb_id, record_id, pdf_bytes)
 
             if success:
-                logger.success(f"Successfully uploaded HTML for {ttb_id}")
+                logger.success(f"Successfully uploaded PDF for {ttb_id}")
 
             return success
 
@@ -350,7 +356,7 @@ class AirtableAdapter(StorageAdapter):
     def create_items(self, items: List[TTBItem]) -> int:
         """
         Create new items in Airtable using batch operations.
-        If fetch_documents is enabled, also fetches and uploads HTML documents for each item.
+        If fetch_documents is enabled, also fetches and uploads PDF documents for each item.
 
         Args:
             items: List of TTBItem models to create
@@ -395,7 +401,7 @@ class AirtableAdapter(StorageAdapter):
     def update_item(self, item: TTBItem) -> bool:
         """
         Update an existing item in Airtable.
-        If fetch_documents is enabled, also fetches and uploads HTML document for the item.
+        If fetch_documents is enabled, also fetches and uploads PDF document for the item.
 
         Args:
             item: TTBItem model to update

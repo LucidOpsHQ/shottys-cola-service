@@ -1,22 +1,18 @@
 """
-COLA Document Fetcher - handles fetching HTML documents from TTB COLA detail pages.
+COLA Document Fetcher - handles fetching PDF documents from TTB COLA detail pages using Playwright.
 
 This module handles:
-1. Detecting if a captcha is present
-2. Solving captcha using 2Captcha service
-3. Fetching the document page HTML
+1. Connecting to Browserless via WSS endpoint
+2. Detecting if a captcha is present
+3. Solving captcha using 2Captcha service
+4. Generating PDF using browser-native print functionality
 """
 import os
-import httpx
-import base64
 import time
-from bs4 import BeautifulSoup
-from pathlib import Path
 from typing import Optional, Tuple
 from loguru import logger
-
-# Import the global httpx client context manager
-from scraper import get_http_client
+from playwright.sync_api import sync_playwright, Page, Browser, TimeoutError as PlaywrightTimeoutError
+import httpx
 
 
 class TwoCaptchaSolver:
@@ -31,7 +27,6 @@ class TwoCaptchaSolver:
         """
         self.api_key = api_key
         self.base_url = "http://2captcha.com"
-        # Use a separate client for 2Captcha API calls (not the TTB session)
         self.client = httpx.Client(timeout=180.0)  # 3 minute timeout for captcha solving
         logger.info("Initialized 2Captcha solver")
 
@@ -116,213 +111,232 @@ class TwoCaptchaSolver:
 
 
 class ColaDocumentFetcher:
-    """Fetches COLA documents from TTB, handling captcha and generating HTMLs."""
+    """Fetches COLA documents from TTB as PDFs using Playwright and Browserless."""
 
-    def __init__(self, two_captcha_api_key: str):
+    def __init__(self, two_captcha_api_key: str, browserless_wss_endpoint: str = None):
         """
         Initialize the document fetcher.
 
         Args:
             two_captcha_api_key: 2Captcha API key
-            output_dir: Directory to save HTMLs
+            browserless_wss_endpoint: Browserless WSS endpoint URL (or set BROWSERLESS_WSS_ENDPOINT env var)
         """
         self.captcha_solver = TwoCaptchaSolver(two_captcha_api_key)
+        self.browserless_wss_endpoint = browserless_wss_endpoint or os.getenv("BROWSERLESS_WSS_ENDPOINT")
 
-        logger.info(f"Initialized COLA document fetcher")
+        if not self.browserless_wss_endpoint:
+            raise ValueError("Browserless WSS endpoint not provided. Set BROWSERLESS_WSS_ENDPOINT environment variable or pass browserless_wss_endpoint parameter.")
 
-    def _get_headers(self) -> dict:
-        """Get HTTP headers for requests."""
-        return {
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Cache-Control': 'max-age=0',
-            'Connection': 'keep-alive',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
-        }
+        logger.info(f"Initialized COLA document fetcher with Browserless")
 
-    def _check_for_captcha(self, html: str) -> Tuple[bool, Optional[str], Optional[str]]:
+    def _check_for_captcha_on_page(self, page: Page) -> Tuple[bool, Optional[str]]:
         """
-        Check if the HTML contains a captcha.
+        Check if the page contains a captcha.
 
         Args:
-            html: HTML content to check
+            page: Playwright Page object
 
         Returns:
-            Tuple of (has_captcha, image_base64, support_id)
+            Tuple of (has_captcha, image_base64)
         """
-        soup = BeautifulSoup(html, 'html.parser')
+        try:
+            # Look for captcha text indicator: "What code is in the image?"
+            captcha_text = page.locator("text=What code is in the image?").first
 
-        # Look for captcha indicators from example-captha.html
-        captcha_text = soup.find(string=lambda text: text and "What code is in the image?" in text)
-        if not captcha_text:
-            captcha_text = soup.find(string=lambda text: text and "testing whether you are a human" in text)
+            if captcha_text.is_visible(timeout=2000):
+                logger.info("Captcha detected on page")
 
-        if captcha_text:
-            logger.info("Captcha detected on page")
+                # Find the captcha image with alt="bottle"
+                img = page.locator('img[alt="bottle"]').first
 
-            # Find the captcha image
-            img = soup.find('img', alt='bottle')
-            if not img:
-                img = soup.find('img', src=lambda src: src and src.startswith('data:image'))
+                if img.is_visible(timeout=1000):
+                    image_data = img.get_attribute('src')
+                    if image_data and image_data.startswith('data:image'):
+                        logger.debug(f"Found captcha image (length: {len(image_data)})")
+                        return True, image_data
 
-            if img and img.get('src'):
-                image_data = img.get('src')
-                logger.debug(f"Found captcha image (length: {len(image_data)})")
+        except Exception as e:
+            logger.debug(f"No captcha found: {e}")
+            return False, None
 
-                # Find support ID if present
-                support_id = None
-                support_text = soup.find(string=lambda text: text and "Your support ID is:" in text)
-                if support_text:
-                    # Extract ID from text like "Your support ID is: 185792478901906347."
-                    import re
-                    match = re.search(r'support ID is:\s*(\d+)', support_text)
-                    if match:
-                        support_id = match.group(1)
-                        logger.debug(f"Found support ID: {support_id}")
+        return False, None
 
-                return True, image_data, support_id
-
-        return False, None, None
-
-    def _is_document_page(self, html: str) -> bool:
+    def _is_document_page(self, page: Page) -> bool:
         """
-        Check if the HTML is a COLA document page (not captcha).
+        Check if the page is a COLA document page (not captcha).
 
         Args:
-            html: HTML content to check
+            page: Playwright Page object
 
         Returns:
             True if it's a document page
         """
-        soup = BeautifulSoup(html, 'html.parser')
+        try:
+            # Check if captcha is present - if so, not a document page
+            captcha_text = page.locator("text=What code is in the image?").first
+            if captcha_text.is_visible(timeout=1000):
+                logger.debug("Captcha detected, not a document page")
+                return False
 
-        # Check for document page indicators from example-cola-doc.html
-        # Look for the form with COLA details
-        form = soup.find('form', {'name': 'colaApplicationForm'})
-        if form:
-            logger.debug("Detected COLA document page")
-            return True
+            # Primary check: Look for the COLA application form
+            form = page.locator('form[name="colaApplicationForm"]').first
+            if form.is_visible(timeout=2000):
+                logger.debug("Detected COLA document page (colaApplicationForm found)")
+                return True
 
-        # Also check for TTB ID in the page
-        ttb_id_div = soup.find('div', class_='data', string=lambda text: text and text.strip().isdigit() and len(text.strip()) == 14)
-        if ttb_id_div:
-            logger.debug("Detected TTB ID on page - likely a document page")
-            return True
+            # Secondary check: Look for TTB ID label in the document structure
+            # The actual document has: <div class="label">TTB ID</div>
+            ttb_id_label = page.locator('div.label:has-text("TTB ID")').first
+            if ttb_id_label.is_visible(timeout=1000):
+                logger.debug("Detected document page with TTB ID label")
+                return True
+
+            # Tertiary check: Look for "PART I - APPLICATION" section header
+            part_one_header = page.locator('div.sectionhead:has-text("PART I - APPLICATION")').first
+            if part_one_header.is_visible(timeout=1000):
+                logger.debug("Detected document page with PART I header")
+                return True
+
+        except Exception as e:
+            logger.debug(f"Not a document page: {e}")
+            return False
 
         return False
 
-    def fetch_document_page(self, ttb_id: str, max_retries: int = 3) -> Optional[str]:
+    def _handle_captcha(self, page: Page, max_retries: int = 3) -> bool:
         """
-        Fetch the COLA document page HTML, handling captcha if present.
+        Handle captcha if present on the page.
+
+        Args:
+            page: Playwright Page object
+            max_retries: Maximum number of retry attempts
+
+        Returns:
+            True if captcha was solved and page is now document page, False otherwise
+        """
+        for attempt in range(max_retries):
+            has_captcha, image_data = self._check_for_captcha_on_page(page)
+
+            if not has_captcha:
+                logger.info("No captcha present")
+                return self._is_document_page(page)
+
+            logger.info(f"Solving captcha (attempt {attempt + 1}/{max_retries})")
+
+            # Solve the captcha
+            captcha_solution = self.captcha_solver.solve_image_captcha(image_data)
+
+            if not captcha_solution:
+                logger.error("Failed to solve captcha")
+                continue
+
+            try:
+                # Find the answer input field with id="ans"
+                answer_input = page.locator('input#ans').first
+
+                # Find the submit button with id="jar"
+                submit_button = page.locator('button#jar').first
+
+                if answer_input.is_visible(timeout=2000) and submit_button.is_visible(timeout=2000):
+                    logger.info(f"Submitting captcha solution: {captcha_solution}")
+
+                    # Fill in the answer
+                    answer_input.fill(captcha_solution)
+
+                    # Click submit and wait for navigation
+                    submit_button.click()
+                    page.wait_for_load_state('networkidle', timeout=15000)
+
+                    # Wait a bit for the page to fully load after captcha
+                    page.wait_for_timeout(1000)
+
+                    # Check if we got the document page now
+                    if self._is_document_page(page):
+                        logger.success("Captcha solved! Got document page")
+                        return True
+                    else:
+                        logger.warning("Captcha submitted but didn't get document page")
+                else:
+                    logger.error("Could not find captcha form elements (input#ans or button#jar)")
+
+            except Exception as e:
+                logger.error(f"Error submitting captcha: {e}")
+
+            # Wait before retry
+            if attempt < max_retries - 1:
+                time.sleep(2)
+
+        logger.error("Failed to solve captcha after all retries")
+        return False
+
+    def fetch_document_pdf(self, ttb_id: str, max_retries: int = 3) -> Optional[bytes]:
+        """
+        Fetch the COLA document as a PDF, handling captcha if present.
 
         Args:
             ttb_id: TTB ID to fetch
             max_retries: Maximum number of retry attempts
 
         Returns:
-            HTML content of the document page or None if failed
+            PDF content as bytes or None if failed
         """
         url = f"https://ttbonline.gov/colasonline/viewColaDetails.do?action=publicFormDisplay&ttbid={ttb_id}"
 
-        logger.info(f"Fetching COLA document for TTB ID: {ttb_id}")
+        logger.info(f"Fetching COLA document PDF for TTB ID: {ttb_id}")
 
-        # Use the global httpx client from scraper.py
-        with get_http_client() as client:
-            for attempt in range(max_retries):
+        with sync_playwright() as p:
+            try:
+                # Connect to Browserless via WSS
+                logger.info(f"Connecting to Browserless at {self.browserless_wss_endpoint}")
+                browser = p.chromium.connect_over_cdp(self.browserless_wss_endpoint)
+
+                # Create a new context and page
+                context = browser.contexts[0] if browser.contexts else browser.new_context()
+                page = context.new_page()
+
                 try:
-                    # Fetch the page
-                    response = client.get(url, headers=self._get_headers())
+                    # Navigate to the URL
+                    logger.info(f"Navigating to {url}")
+                    page.goto(url, wait_until='networkidle', timeout=30000)
 
-                    if response.status_code != 200:
-                        logger.error(f"Received status code {response.status_code}")
-                        continue
+                    # Handle captcha if present
+                    if not self._handle_captcha(page, max_retries):
+                        logger.error("Failed to handle captcha or reach document page")
+                        return None
 
-                    html = response.text
+                    # Wait for all images to load (label images, signature, etc.)
+                    # The document includes images like:
+                    # - /colasonline/publicViewSignature.do?ttbid=...
+                    # - /colasonline/publicViewAttachment.do?filename=...
+                    logger.info("Waiting for all images to load...")
+                    page.wait_for_load_state('networkidle', timeout=10000)
+                    page.wait_for_timeout(2000)  # Additional wait for dynamic content
 
-                    # Check if it's a document page (success!)
-                    if self._is_document_page(html):
-                        logger.success(f"Successfully fetched document page for {ttb_id}")
-                        return html
+                    # Generate PDF using browser-native print
+                    logger.info("Generating PDF...")
+                    pdf_bytes = page.pdf(
+                        format='Letter',
+                        print_background=True,
+                        margin={
+                            'top': '0.5in',
+                            'right': '0.5in',
+                            'bottom': '0.5in',
+                            'left': '0.5in'
+                        }
+                    )
 
-                    # Check if there's a captcha
-                    has_captcha, image_data, support_id = self._check_for_captcha(html)
+                    logger.success(f"Successfully generated PDF for {ttb_id}: {len(pdf_bytes)} bytes")
+                    return pdf_bytes
 
-                    if has_captcha:
-                        logger.info(f"Captcha detected (attempt {attempt + 1}/{max_retries})")
+                finally:
+                    # Clean up
+                    page.close()
+                    context.close()
+                    browser.close()
 
-                        # Solve the captcha
-                        captcha_solution = self.captcha_solver.solve_image_captcha(image_data)
-
-                        if not captcha_solution:
-                            logger.error("Failed to solve captcha")
-                            continue
-
-                        # Submit the captcha solution
-                        # Note: The exact submission mechanism depends on the actual captcha form
-                        # This is a placeholder - you'll need to inspect the actual form submission
-                        soup = BeautifulSoup(html, 'html.parser')
-
-                        # Find the form and submit button
-                        answer_input = soup.find('input', {'id': 'ans'}) or soup.find('input', {'name': 'answer'})
-                        submit_button = soup.find('button', {'id': 'jar'})
-
-                        if answer_input and submit_button:
-                            # Submit the captcha
-                            # The actual URL and method may vary - this is based on example-captha.html
-                            logger.info(f"Submitting captcha solution: {captcha_solution}")
-
-                            # Try to post back to the same URL or find the form action
-                            submit_response = client.post(
-                                url,
-                                data={'answer': captcha_solution},
-                                headers=self._get_headers()
-                            )
-
-                            if submit_response.status_code == 200:
-                                html = submit_response.text
-
-                                # Check if we got the document page now
-                                if self._is_document_page(html):
-                                    logger.success(f"Captcha solved! Got document page for {ttb_id}")
-                                    return html
-                                else:
-                                    logger.warning("Captcha submitted but didn't get document page")
-                            else:
-                                logger.error(f"Captcha submission failed with status {submit_response.status_code}")
-                        else:
-                            logger.error("Could not find captcha form elements")
-                    else:
-                        logger.warning(f"Page is neither document nor captcha (attempt {attempt + 1}/{max_retries})")
-
-                except Exception as e:
-                    logger.error(f"Error fetching document (attempt {attempt + 1}/{max_retries}): {e}")
-
-                # Wait before retry
-                if attempt < max_retries - 1:
-                    time.sleep(2)
-
-            logger.error(f"Failed to fetch document for {ttb_id} after {max_retries} attempts")
-            return None
-
-    def fetch_document_html(self, ttb_id: str) -> Optional[str]:
-        """
-        Complete workflow: fetch document page HTML.
-
-        Args:
-            ttb_id: TTB ID to fetch
-
-        Returns:
-            HTML content as string or None if failed
-        """
-        # Fetch the document page HTML
-        html = self.fetch_document_page(ttb_id)
-
-        if html:
-            logger.success(f"Successfully fetched HTML for {ttb_id}: {len(html)} characters")
-        else:
-            logger.error(f"Failed to fetch document page for {ttb_id}")
-
-        return html
+            except Exception as e:
+                logger.error(f"Error fetching document PDF for {ttb_id}: {e}")
+                return None
 
 
 # Example usage
@@ -332,22 +346,29 @@ if __name__ == "__main__":
 
     load_dotenv()
 
-    api_key = os.getenv("TWO_CAPTCHA_API_KEY")
-    if not api_key:
+    two_captcha_key = os.getenv("TWO_CAPTCHA_API_KEY")
+    browserless_wss = os.getenv("BROWSERLESS_WSS_ENDPOINT")
+
+    if not two_captcha_key:
         logger.error("TWO_CAPTCHA_API_KEY not set in environment")
         sys.exit(1)
 
-    fetcher = ColaDocumentFetcher(api_key)
+    if not browserless_wss:
+        logger.error("BROWSERLESS_WSS_ENDPOINT not set in environment")
+        sys.exit(1)
 
-    # Test with the example TTB ID from example-cola-doc.html
+    fetcher = ColaDocumentFetcher(two_captcha_key, browserless_wss)
+
+    # Test with an example TTB ID
     ttb_id = "23079001000657"
-    html = fetcher.fetch_document_html(ttb_id)
+    pdf_bytes = fetcher.fetch_document_pdf(ttb_id)
 
-    if html:
-        logger.success(f"HTML fetched successfully: {len(html)} characters")
+    if pdf_bytes:
+        logger.success(f"PDF fetched successfully: {len(pdf_bytes)} bytes")
         # Optionally save for testing
-        test_output = Path("./test_output.html")
-        test_output.write_text(html, encoding='utf-8')
-        logger.info(f"Saved test HTML to {test_output}")
+        from pathlib import Path
+        test_output = Path("./test_output.pdf")
+        test_output.write_bytes(pdf_bytes)
+        logger.info(f"Saved test PDF to {test_output}")
     else:
-        logger.error("Failed to fetch HTML")
+        logger.error("Failed to fetch PDF")
