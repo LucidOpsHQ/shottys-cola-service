@@ -3,7 +3,7 @@ Adapters for syncing TTB data to external services.
 """
 import os
 import io
-import time
+import asyncio
 from abc import ABC, abstractmethod
 from typing import List, Dict, Set, Optional
 from pathlib import Path
@@ -408,7 +408,7 @@ class AirtableAdapter(StorageAdapter):
             logger.error(f"Failed to upload PDF for {ttb_id}: {e}")
             return False
 
-    def _fetch_and_upload_document(self, ttb_id: str, record_id: str, item: TTBItem = None, is_new: bool = False) -> bool:
+    async def _fetch_and_upload_document(self, ttb_id: str, record_id: str, item: TTBItem = None, is_new: bool = False) -> bool:
         """
         Fetch document and upload PDF to Airtable record with smart upload logic.
 
@@ -437,7 +437,7 @@ class AirtableAdapter(StorageAdapter):
             if is_new:
                 logger.info(f"Fetching and uploading document for new record: {ttb_id}")
 
-                pdf_bytes = self.document_fetcher.fetch_document_pdf(ttb_id)
+                pdf_bytes = await self.document_fetcher.fetch_document_pdf(ttb_id)
                 if not pdf_bytes:
                     logger.error(f"Failed to fetch document for {ttb_id}")
                     return False
@@ -454,7 +454,7 @@ class AirtableAdapter(StorageAdapter):
             if not has_cola or not has_latest_cola:
                 logger.info(f"No existing documents for {ttb_id}, uploading to both fields")
 
-                pdf_bytes = self.document_fetcher.fetch_document_pdf(ttb_id)
+                pdf_bytes = await self.document_fetcher.fetch_document_pdf(ttb_id)
                 if not pdf_bytes:
                     logger.error(f"Failed to fetch document for {ttb_id}")
                     return False
@@ -475,7 +475,7 @@ class AirtableAdapter(StorageAdapter):
                 # Fields changed - replace Latest COLA and add to COLA
                 logger.info(f"Fields changed for {ttb_id}, updating documents")
 
-                pdf_bytes = self.document_fetcher.fetch_document_pdf(ttb_id)
+                pdf_bytes = await self.document_fetcher.fetch_document_pdf(ttb_id)
                 if not pdf_bytes:
                     logger.error(f"Failed to fetch document for {ttb_id}")
                     return False
@@ -488,7 +488,7 @@ class AirtableAdapter(StorageAdapter):
                 # No item provided for comparison, upload to be safe
                 logger.warning(f"No item data for change detection on {ttb_id}, uploading to both fields")
 
-                pdf_bytes = self.document_fetcher.fetch_document_pdf(ttb_id)
+                pdf_bytes = await self.document_fetcher.fetch_document_pdf(ttb_id)
                 if not pdf_bytes:
                     logger.error(f"Failed to fetch document for {ttb_id}")
                     return False
@@ -518,6 +518,14 @@ class AirtableAdapter(StorageAdapter):
             logger.info("No items to create")
             return 0
 
+        # If async operations needed, run them in event loop
+        if self.fetch_documents and self.document_fetcher:
+            return asyncio.run(self._create_items_async(items))
+        else:
+            return self._create_items_sync(items)
+
+    def _create_items_sync(self, items: List[TTBItem]) -> int:
+        """Synchronous version for when documents are not being fetched."""
         logger.info(f"Creating {len(items)} new records in Airtable...")
 
         try:
@@ -525,28 +533,34 @@ class AirtableAdapter(StorageAdapter):
             batch_size = 10
             created_count = 0
 
-            # Use context manager to manage browser session lifecycle if fetching documents
-            if self.fetch_documents and self.document_fetcher:
-                with self.document_fetcher:  # Opens browser connection
-                    logger.info("Browser session established for batch PDF generation")
+            for i in range(0, len(items), batch_size):
+                batch = items[i:i + batch_size]
+                records_data = [self._item_to_record(item) for item in batch]
 
-                    for i in range(0, len(items), batch_size):
-                        batch = items[i:i + batch_size]
-                        records_data = [self._item_to_record(item) for item in batch]
+                created_records = self.table.batch_create(records_data)
+                created_count += len(batch)
+                logger.debug(f"Created batch {i // batch_size + 1}: {len(batch)} records")
 
-                        created_records = self.table.batch_create(records_data)
-                        created_count += len(batch)
-                        logger.debug(f"Created batch {i // batch_size + 1}: {len(batch)} records")
+            logger.success(f"Successfully created {created_count} records in Airtable")
+            return created_count
 
-                        # Fetch and upload documents using persistent browser session
-                        for idx, item in enumerate(batch):
-                            record_id = created_records[idx]['id']
-                            self._fetch_and_upload_document(item.ttb_id, record_id, item=item, is_new=True)
-                            # Small delay to avoid rate limiting
-                            time.sleep(0.5)
-                # Browser session automatically closed here
-            else:
-                # No document fetching - just create records
+        except Exception as e:
+            logger.exception(f"Failed to create items in Airtable: {e}")
+            raise
+
+    async def _create_items_async(self, items: List[TTBItem]) -> int:
+        """Async version for when documents are being fetched."""
+        logger.info(f"Creating {len(items)} new records in Airtable...")
+
+        try:
+            # Airtable batch API accepts max 10 records at a time
+            batch_size = 10
+            created_count = 0
+
+            # Use async context manager to manage browser session lifecycle
+            async with self.document_fetcher:  # Opens browser connection
+                logger.info("Browser session established for batch PDF generation")
+
                 for i in range(0, len(items), batch_size):
                     batch = items[i:i + batch_size]
                     records_data = [self._item_to_record(item) for item in batch]
@@ -554,6 +568,14 @@ class AirtableAdapter(StorageAdapter):
                     created_records = self.table.batch_create(records_data)
                     created_count += len(batch)
                     logger.debug(f"Created batch {i // batch_size + 1}: {len(batch)} records")
+
+                    # Fetch and upload documents using persistent browser session
+                    for idx, item in enumerate(batch):
+                        record_id = created_records[idx]['id']
+                        await self._fetch_and_upload_document(item.ttb_id, record_id, item=item, is_new=True)
+                        # Small delay to avoid rate limiting
+                        await asyncio.sleep(0.5)
+            # Browser session automatically closed here
 
             logger.success(f"Successfully created {created_count} records in Airtable")
             return created_count
@@ -573,6 +595,37 @@ class AirtableAdapter(StorageAdapter):
         Returns:
             True if successful, False otherwise
         """
+        # If async operations needed, run them in event loop
+        if self.fetch_documents and self.document_fetcher:
+            return asyncio.run(self._update_item_async(item))
+        else:
+            return self._update_item_sync(item)
+
+    def _update_item_sync(self, item: TTBItem) -> bool:
+        """Synchronous version for when documents are not being fetched."""
+        try:
+            # Find the record by TTB ID
+            formula = f"{{TTB ID}} = '{item.ttb_id}'"
+            existing_records = self.table.all(formula=formula)
+
+            if not existing_records:
+                logger.warning(f"Record not found for update: {item.ttb_id}")
+                return False
+
+            record_id = existing_records[0]["id"]
+            record_data = self._item_to_record(item)
+
+            self.table.update(record_id, record_data)
+            logger.debug(f"Updated record: {item.ttb_id}")
+
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to update item {item.ttb_id}: {e}")
+            return False
+
+    async def _update_item_async(self, item: TTBItem) -> bool:
+        """Async version for when documents are being fetched."""
         try:
             # Find the record by TTB ID
             formula = f"{{TTB ID}} = '{item.ttb_id}'"
@@ -589,9 +642,8 @@ class AirtableAdapter(StorageAdapter):
             logger.debug(f"Updated record: {item.ttb_id}")
 
             # Fetch and upload document if enabled (using smart upload logic)
-            if self.fetch_documents and self.document_fetcher:
-                self._fetch_and_upload_document(item.ttb_id, record_id, item=item, is_new=False)
-                time.sleep(0.5)  # Small delay to avoid rate limiting
+            await self._fetch_and_upload_document(item.ttb_id, record_id, item=item, is_new=False)
+            await asyncio.sleep(0.5)  # Small delay to avoid rate limiting
 
             return True
 

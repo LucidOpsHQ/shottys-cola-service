@@ -8,10 +8,10 @@ This module handles:
 4. Generating PDF using browser-native print functionality
 """
 import os
-import time
+import asyncio
 from typing import Optional, Tuple
 from loguru import logger
-from playwright.sync_api import sync_playwright, Page, Browser, TimeoutError as PlaywrightTimeoutError
+from playwright.async_api import async_playwright, Page, Browser, TimeoutError as PlaywrightTimeoutError
 import httpx
 
 
@@ -27,10 +27,10 @@ class TwoCaptchaSolver:
         """
         self.api_key = api_key
         self.base_url = "http://2captcha.com"
-        self.client = httpx.Client(timeout=180.0)  # 3 minute timeout for captcha solving
+        self.client = httpx.AsyncClient(timeout=180.0)  # 3 minute timeout for captcha solving
         logger.info("Initialized 2Captcha solver")
 
-    def solve_image_captcha(self, image_base64: str) -> Optional[str]:
+    async def solve_image_captcha(self, image_base64: str) -> Optional[str]:
         """
         Solve an image captcha using 2Captcha.
 
@@ -48,7 +48,7 @@ class TwoCaptchaSolver:
 
         # Submit captcha
         try:
-            response = self.client.post(
+            response = await self.client.post(
                 f"{self.base_url}/in.php",
                 data={
                     'key': self.api_key,
@@ -70,9 +70,9 @@ class TwoCaptchaSolver:
             # Poll for result
             max_attempts = 60  # 2 minutes max
             for attempt in range(max_attempts):
-                time.sleep(2)  # Wait 2 seconds between checks
+                await asyncio.sleep(2)  # Wait 2 seconds between checks
 
-                response = self.client.get(
+                response = await self.client.get(
                     f"{self.base_url}/res.php",
                     params={
                         'key': self.api_key,
@@ -102,12 +102,17 @@ class TwoCaptchaSolver:
             logger.error(f"Error solving captcha: {e}")
             return None
 
-    def __del__(self):
-        """Cleanup httpx client."""
+    async def __aenter__(self):
+        """Async context manager entry."""
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Async context manager exit - cleanup httpx client."""
         try:
-            self.client.close()
+            await self.client.aclose()
         except:
             pass
+        return False
 
 
 class ColaDocumentFetcher:
@@ -134,27 +139,34 @@ class ColaDocumentFetcher:
 
         logger.info(f"Initialized COLA document fetcher with Browserless")
 
-    def connect_browser(self):
+    async def connect_browser(self, max_retries: int = 5, initial_timeout: int = 60000):
         """
-        Connect to Browserless browser. Call this once before fetching multiple documents.
+        Connect to Browserless browser with retry logic for serverless cold starts.
+
+        Args:
+            max_retries: Maximum number of connection attempts (default: 5)
+            initial_timeout: Initial timeout in milliseconds (default: 60000ms = 60s)
         """
         if self._browser is not None:
             logger.debug("Browser already connected")
             return
 
         logger.info(f"Connecting to Browserless at {self.browserless_wss_endpoint}")
-        self._playwright = sync_playwright().start()
-        self._browser = self._playwright.chromium.connect_over_cdp(self.browserless_wss_endpoint)
-        self._context = self._browser.contexts[0] if self._browser.contexts else self._browser.new_context()
-        logger.success("Browser session established and ready for reuse")
 
-    def disconnect_browser(self):
+        # Use the helper method for connection with retry
+        self._playwright, self._browser, self._context = await self._connect_to_browserless_with_retry(
+            max_retries=max_retries,
+            initial_timeout=initial_timeout
+        )
+        logger.success("Persistent browser session established and ready for reuse")
+
+    async def disconnect_browser(self):
         """
         Disconnect from browser and cleanup resources. Call this after all documents are fetched.
         """
         if self._context:
             try:
-                self._context.close()
+                await self._context.close()
                 logger.debug("Browser context closed")
             except Exception as e:
                 logger.warning(f"Error closing context: {e}")
@@ -162,7 +174,7 @@ class ColaDocumentFetcher:
 
         if self._browser:
             try:
-                self._browser.close()
+                await self._browser.close()
                 logger.debug("Browser connection closed")
             except Exception as e:
                 logger.warning(f"Error closing browser: {e}")
@@ -170,7 +182,7 @@ class ColaDocumentFetcher:
 
         if self._playwright:
             try:
-                self._playwright.stop()
+                await self._playwright.stop()
                 logger.debug("Playwright stopped")
             except Exception as e:
                 logger.warning(f"Error stopping Playwright: {e}")
@@ -178,17 +190,67 @@ class ColaDocumentFetcher:
 
         logger.info("Browser session cleaned up")
 
-    def __enter__(self):
-        """Context manager entry - connects browser."""
-        self.connect_browser()
+    async def __aenter__(self):
+        """Async context manager entry - connects browser."""
+        await self.connect_browser()
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """Context manager exit - disconnects browser."""
-        self.disconnect_browser()
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Async context manager exit - disconnects browser."""
+        await self.disconnect_browser()
         return False
 
-    def _check_for_captcha_on_page(self, page: Page) -> Tuple[bool, Optional[str]]:
+    async def _connect_to_browserless_with_retry(self, max_retries: int = 5, initial_timeout: int = 60000) -> Tuple:
+        """
+        Helper method to connect to Browserless with retry logic.
+
+        Args:
+            max_retries: Maximum number of connection attempts
+            initial_timeout: Initial timeout in milliseconds
+
+        Returns:
+            Tuple of (playwright, browser, context)
+        """
+        last_error = None
+        for attempt in range(1, max_retries + 1):
+            playwright = None
+            try:
+                # Increase timeout with each retry attempt
+                timeout = initial_timeout + (attempt - 1) * 30000
+                logger.info(f"Browserless connection attempt {attempt}/{max_retries} (timeout: {timeout}ms)...")
+
+                playwright = await async_playwright().start()
+                browser = await playwright.chromium.connect_over_cdp(
+                    self.browserless_wss_endpoint,
+                    timeout=timeout
+                )
+                context = browser.contexts[0] if browser.contexts else await browser.new_context()
+                logger.success(f"Browserless connection established on attempt {attempt}")
+                return playwright, browser, context
+
+            except Exception as e:
+                last_error = e
+                logger.warning(f"Browserless connection attempt {attempt}/{max_retries} failed: {e}")
+
+                # Clean up any partial connections
+                if playwright:
+                    try:
+                        await playwright.stop()
+                    except:
+                        pass
+
+                if attempt < max_retries:
+                    # Exponential backoff with cap
+                    wait_time = min(2 ** attempt, 30)
+                    logger.info(f"Waiting {wait_time}s before retry...")
+                    await asyncio.sleep(wait_time)
+
+        # All retries failed
+        error_msg = f"Failed to connect to Browserless after {max_retries} attempts. Last error: {last_error}"
+        logger.error(error_msg)
+        raise ConnectionError(error_msg)
+
+    async def _check_for_captcha_on_page(self, page: Page) -> Tuple[bool, Optional[str]]:
         """
         Check if the page contains a captcha.
 
@@ -202,14 +264,14 @@ class ColaDocumentFetcher:
             # Look for captcha text indicator: "What code is in the image?"
             captcha_text = page.locator("text=What code is in the image?").first
 
-            if captcha_text.is_visible(timeout=2000):
+            if await captcha_text.is_visible(timeout=2000):
                 logger.info("Captcha detected on page")
 
                 # Find the captcha image with alt="bottle"
                 img = page.locator('img[alt="bottle"]').first
 
-                if img.is_visible(timeout=1000):
-                    image_data = img.get_attribute('src')
+                if await img.is_visible(timeout=1000):
+                    image_data = await img.get_attribute('src')
                     if image_data and image_data.startswith('data:image'):
                         logger.debug(f"Found captcha image (length: {len(image_data)})")
                         return True, image_data
@@ -220,7 +282,7 @@ class ColaDocumentFetcher:
 
         return False, None
 
-    def _is_document_page(self, page: Page) -> bool:
+    async def _is_document_page(self, page: Page) -> bool:
         """
         Check if the page is a COLA document page (not captcha).
 
@@ -233,26 +295,26 @@ class ColaDocumentFetcher:
         try:
             # Check if captcha is present - if so, not a document page
             captcha_text = page.locator("text=What code is in the image?").first
-            if captcha_text.is_visible(timeout=1000):
+            if await captcha_text.is_visible(timeout=1000):
                 logger.debug("Captcha detected, not a document page")
                 return False
 
             # Primary check: Look for the COLA application form
             form = page.locator('form[name="colaApplicationForm"]').first
-            if form.is_visible(timeout=2000):
+            if await form.is_visible(timeout=2000):
                 logger.debug("Detected COLA document page (colaApplicationForm found)")
                 return True
 
             # Secondary check: Look for TTB ID label in the document structure
             # The actual document has: <div class="label">TTB ID</div>
             ttb_id_label = page.locator('div.label:has-text("TTB ID")').first
-            if ttb_id_label.is_visible(timeout=1000):
+            if await ttb_id_label.is_visible(timeout=1000):
                 logger.debug("Detected document page with TTB ID label")
                 return True
 
             # Tertiary check: Look for "PART I - APPLICATION" section header
             part_one_header = page.locator('div.sectionhead:has-text("PART I - APPLICATION")').first
-            if part_one_header.is_visible(timeout=1000):
+            if await part_one_header.is_visible(timeout=1000):
                 logger.debug("Detected document page with PART I header")
                 return True
 
@@ -262,7 +324,7 @@ class ColaDocumentFetcher:
 
         return False
 
-    def _handle_captcha(self, page: Page, max_retries: int = 3) -> bool:
+    async def _handle_captcha(self, page: Page, max_retries: int = 3) -> bool:
         """
         Handle captcha if present on the page.
 
@@ -274,16 +336,16 @@ class ColaDocumentFetcher:
             True if captcha was solved and page is now document page, False otherwise
         """
         for attempt in range(max_retries):
-            has_captcha, image_data = self._check_for_captcha_on_page(page)
+            has_captcha, image_data = await self._check_for_captcha_on_page(page)
 
             if not has_captcha:
                 logger.info("No captcha present")
-                return self._is_document_page(page)
+                return await self._is_document_page(page)
 
             logger.info(f"Solving captcha (attempt {attempt + 1}/{max_retries})")
 
             # Solve the captcha
-            captcha_solution = self.captcha_solver.solve_image_captcha(image_data)
+            captcha_solution = await self.captcha_solver.solve_image_captcha(image_data)
 
             if not captcha_solution:
                 logger.error("Failed to solve captcha")
@@ -296,21 +358,21 @@ class ColaDocumentFetcher:
                 # Find the submit button with id="jar"
                 submit_button = page.locator('button#jar').first
 
-                if answer_input.is_visible(timeout=2000) and submit_button.is_visible(timeout=2000):
+                if await answer_input.is_visible(timeout=2000) and await submit_button.is_visible(timeout=2000):
                     logger.info(f"Submitting captcha solution: {captcha_solution}")
 
                     # Fill in the answer
-                    answer_input.fill(captcha_solution)
+                    await answer_input.fill(captcha_solution)
 
                     # Click submit and wait for navigation
-                    submit_button.click()
-                    page.wait_for_load_state('networkidle', timeout=15000)
+                    await submit_button.click()
+                    await page.wait_for_load_state('networkidle', timeout=15000)
 
                     # Wait a bit for the page to fully load after captcha
-                    page.wait_for_timeout(1000)
+                    await page.wait_for_timeout(1000)
 
                     # Check if we got the document page now
-                    if self._is_document_page(page):
+                    if await self._is_document_page(page):
                         logger.success("Captcha solved! Got document page")
                         return True
                     else:
@@ -323,12 +385,12 @@ class ColaDocumentFetcher:
 
             # Wait before retry
             if attempt < max_retries - 1:
-                time.sleep(2)
+                await asyncio.sleep(2)
 
         logger.error("Failed to solve captcha after all retries")
         return False
 
-    def fetch_document_pdf(self, ttb_id: str, max_retries: int = 3) -> Optional[bytes]:
+    async def fetch_document_pdf(self, ttb_id: str, max_retries: int = 3) -> Optional[bytes]:
         """
         Fetch the COLA document as a PDF, handling captcha if present.
 
@@ -356,21 +418,20 @@ class ColaDocumentFetcher:
             # Use persistent session if available, otherwise create temporary one
             if use_persistent_session:
                 context = self._context
-                page = context.new_page()
+                page = await context.new_page()
             else:
-                # Temporary session for standalone usage
-                playwright = sync_playwright().start()
-                browser = playwright.chromium.connect_over_cdp(self.browserless_wss_endpoint)
-                context = browser.contexts[0] if browser.contexts else browser.new_context()
-                page = context.new_page()
+                # Temporary session for standalone usage with retry logic
+                logger.debug("Creating temporary Browserless session with retry logic")
+                playwright, browser, context = await self._connect_to_browserless_with_retry()
+                page = await context.new_page()
 
             try:
                 # Navigate to the URL
                 logger.info(f"Navigating to {url}")
-                page.goto(url, wait_until='networkidle', timeout=30000)
+                await page.goto(url, wait_until='networkidle', timeout=30000)
 
                 # Handle captcha if present
-                if not self._handle_captcha(page, max_retries):
+                if not await self._handle_captcha(page, max_retries):
                     logger.error("Failed to handle captcha or reach document page")
                     return None
 
@@ -379,12 +440,12 @@ class ColaDocumentFetcher:
                 # - /colasonline/publicViewSignature.do?ttbid=...
                 # - /colasonline/publicViewAttachment.do?filename=...
                 logger.info("Waiting for all images to load...")
-                page.wait_for_load_state('networkidle', timeout=10000)
-                page.wait_for_timeout(2000)  # Additional wait for dynamic content
+                await page.wait_for_load_state('networkidle', timeout=10000)
+                await page.wait_for_timeout(2000)  # Additional wait for dynamic content
 
                 # Generate PDF using browser-native print
                 logger.info("Generating PDF...")
-                pdf_bytes = page.pdf(
+                pdf_bytes = await page.pdf(
                     format='Letter',
                     print_background=True,
                     margin={
@@ -400,13 +461,13 @@ class ColaDocumentFetcher:
 
             finally:
                 # Clean up page (but not context/browser if using persistent session)
-                page.close()
+                await page.close()
 
                 if not use_persistent_session:
                     # Clean up temporary session
-                    context.close()
-                    browser.close()
-                    playwright.stop()
+                    await context.close()
+                    await browser.close()
+                    await playwright.stop()
 
         except Exception as e:
             logger.error(f"Error fetching document PDF for {ttb_id}: {e}")
@@ -431,18 +492,21 @@ if __name__ == "__main__":
         logger.error("BROWSERLESS_WSS_ENDPOINT not set in environment")
         sys.exit(1)
 
-    fetcher = ColaDocumentFetcher(two_captcha_key, browserless_wss)
+    async def main():
+        fetcher = ColaDocumentFetcher(two_captcha_key, browserless_wss)
 
-    # Test with an example TTB ID
-    ttb_id = "23079001000657"
-    pdf_bytes = fetcher.fetch_document_pdf(ttb_id)
+        # Test with an example TTB ID
+        ttb_id = "23079001000657"
+        pdf_bytes = await fetcher.fetch_document_pdf(ttb_id)
 
-    if pdf_bytes:
-        logger.success(f"PDF fetched successfully: {len(pdf_bytes)} bytes")
-        # Optionally save for testing
-        from pathlib import Path
-        test_output = Path("./test_output.pdf")
-        test_output.write_bytes(pdf_bytes)
-        logger.info(f"Saved test PDF to {test_output}")
-    else:
-        logger.error("Failed to fetch PDF")
+        if pdf_bytes:
+            logger.success(f"PDF fetched successfully: {len(pdf_bytes)} bytes")
+            # Optionally save for testing
+            from pathlib import Path
+            test_output = Path("./test_output.pdf")
+            test_output.write_bytes(pdf_bytes)
+            logger.info(f"Saved test PDF to {test_output}")
+        else:
+            logger.error("Failed to fetch PDF")
+
+    asyncio.run(main())
